@@ -27,4 +27,4 @@ ultralytics==8.2.8
 svgpathtools==1.7.1
 svgwrite==1.4.3
 thop==0.1.1.post2209072238
-lmdb==1.4.1
+# lmdb==1.4.1  # Removed due to build issues on Railway
