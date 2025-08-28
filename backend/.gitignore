@@ -1,0 +1,8 @@
+# Temporary files and folders (needed for storing image/json temporarily)
+tmp/
+
+# Jupyter notebook checkpoints
+.ipynb_checkpoints/
+
+# Ignore the model checkpoint file for best validation loss variance
+model_best_val_loss_var.pkl
