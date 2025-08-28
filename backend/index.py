@@ -104,5 +104,16 @@ def index():
         "version": "0.0.1"
     })
 
+@app.route('/health/torch')
+def health_torch():
+    import sys, os
+    info = {"python": sys.executable, "PATH": os.environ.get("PATH")}
+    try:
+        import torch
+        info.update({"ok": True, "torch": torch.__version__})
+    except Exception as e:
+        info.update({"ok": False, "error": str(e)})
+    return jsonify(info), (200 if info["ok"] else 500)
+
 if __name__=='__main__':
     app.run(debug=True, host='0.0.0.0', port=5050)
