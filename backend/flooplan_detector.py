@@ -159,6 +159,9 @@ if not os.path.exists(model_path):
     subprocess.run(["gdown", "https://drive.google.com/uc?id=1gRB7ez1e4H7a9Y09lLqRuna0luZO5VRK"])
 else:
     print(f"{model_path} already exists, skipping download.")
+# model_path = os.path.join(os.path.dirname(__file__), "model_best_val_loss_var.pkl")
+# if not os.path.exists(model_path):
+#     raise FileNotFoundError(f"Model file not found: {model_path}")
 
 
 
@@ -4503,6 +4506,7 @@ def main_floorplan_processing(img_path, tmp_dir):
 # If this file is run directly, execute the main processing
 if __name__ == "__main__":
     # This allows the file to be run directly for testing
+    app.run(host="0.0.0.0", port=5050, debug=False, use_reloader=False)
     import sys
     if len(sys.argv) > 1:
         img_path = sys.argv[1]
