@@ -4200,15 +4200,20 @@ def main_floorplan_processing(img_path, tmp_dir):
     from shapely.geometry import LineString, Point
     from shapely.geometry import LineString
     
+    # # Check for model file
+    # model_path = 'model/model_1427.pth'
+    # if not os.path.exists(model_path):
+    #     # Try alternative path
+    #     model_path = 'model_best_val_loss_var.pkl'
+    #     if not os.path.exists(model_path):
+    #         import subprocess
+    #         subprocess.run(["gdown", "https://drive.google.com/uc?id=1gRB7ez1e4H7a9Y09lLqRuna0luZO5VRK"])
+    # Load the model directly
+
     # Check for model file
-    model_path = 'model/model_1427.pth'
+    model_path = 'model_best_val_loss_var.pkl'
     if not os.path.exists(model_path):
-        # Try alternative path
-        model_path = 'model_best_val_loss_var.pkl'
-        if not os.path.exists(model_path):
-            import subprocess
-            subprocess.run(["gdown", "https://drive.google.com/uc?id=1gRB7ez1e4H7a9Y09lLqRuna0luZO5VRK"])
-            
+        raise FileNotFoundError(f"Model file not found: {model_path}")
     
     # Read and process the image
     img = cv2.imread(img_path)
@@ -4310,24 +4315,28 @@ def main_floorplan_processing(img_path, tmp_dir):
     model.conv4_ = torch.nn.Conv2d(256, n_classes, bias=True, kernel_size=1)
     model.upsample = torch.nn.ConvTranspose2d(n_classes, n_classes, kernel_size=4, stride=4)
     
-    # Try to load the model with different possible paths
-    model_loaded = False
-    for model_file in ['model/model_1427.pth', 'model_best_val_loss_var.pkl']:
-        if os.path.exists(model_file):
-            try:
-                checkpoint = torch.load(model_file, map_location=torch.device('cpu'))
-                if 'model_state' in checkpoint:
-                    model.load_state_dict(checkpoint['model_state'])
-                else:
-                    model.load_state_dict(checkpoint)
-                model_loaded = True
-                break
-            except Exception as e:
-                print(f"Failed to load model from {model_file}: {e}")
-                continue
+    # # Try to load the model with different possible paths
+    # model_loaded = False
+    # for model_file in ['model/model_1427.pth', 'model_best_val_loss_var.pkl']:
+    #     if os.path.exists(model_file):
+    #         try:
+    #             checkpoint = torch.load(model_file, map_location=torch.device('cpu'))
+    #             if 'model_state' in checkpoint:
+    #                 model.load_state_dict(checkpoint['model_state'])
+    #             else:
+    #                 model.load_state_dict(checkpoint)
+    #             model_loaded = True
+    #             break
+    #         except Exception as e:
+    #             print(f"Failed to load model from {model_file}: {e}")
+    #             continue
     
-    if not model_loaded:
-        raise FileNotFoundError("Could not load model from any available path")
+    # if not model_loaded:
+    #     raise FileNotFoundError("Could not load model from any available path")
+    # Load the model directly
+    checkpoint = torch.load('model_best_val_loss_var.pkl', map_location=torch.device('cpu'))
+    model.load_state_dict(checkpoint['model_state'])
+    model.eval()
     
     model.eval()
     
