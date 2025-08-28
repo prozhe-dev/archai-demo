@@ -73,44 +73,30 @@ img_path = main_img_path
 
 # Import library
 import matplotlib.pyplot as plt
-import cv2
+import cv2 # for image gathering
 import numpy as np
 import io 
 
 # Define a dummy display function for non-Jupyter environments
 try:
-from IPython.display import display
+    from IPython.display import display
 except ImportError:
     def display(*args, **kwargs):
-        pass  # Do nothing in non-Jupyter environments
-
-from PIL import Image
-
-import math
-import matplotlib.pyplot as plt
-
-
-import cv2 # for image gathering
-import numpy as np
-import json
+        pass
 
 # for visualize
 from PIL import Image
-from IPython.display import display
+
+import math
+
+import json
 
 
 # SHAPELY
+import shapely
 from shapely.geometry import Polygon, LineString, Point
 from shapely.ops import unary_union
 
-import cv2
-from IPython.display import display
-from PIL import Image
-
-import shapely
-from shapely.geometry import LineString, Point
-
-from shapely.geometry import LineString
 
 
 
