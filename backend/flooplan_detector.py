@@ -20,7 +20,7 @@ if not os.path.exists(tmp_dir):
 main_img_path = os.path.join(tmp_dir, "floorplan.png")
 img_path = main_img_path
 
-print("Image path:", img_path)
+# print("Image path:", img_path)
 
 
 # In[2]:
@@ -699,7 +699,7 @@ def detectOuterContours(detect_img, output_img = None, color = [255, 255, 255]):
     #   kernel: 3x3 ones expands white regions by one pixel layer
     #   iterations: number of dilation passes
     bw = cv2.dilate(bw, np.ones((3, 3), np.uint8), 1)
-    print("dilate")
+    # print("dilate")
     # display(Image.fromarray(bw))
 
     
@@ -730,9 +730,9 @@ def detectOuterContours(detect_img, output_img = None, color = [255, 255, 255]):
     # Sweep (epsilon, gap) grid and evaluate
     # --------------------------------------------
     for eps_idx, epsilon_mult in enumerate(epsilon_values):
-        print(f"\n🔍 Testing epsilon {epsilon_mult:.3f}...")
+        # print(f"\n🔍 Testing epsilon {epsilon_mult:.3f}...")
         for gap_idx, gap_mult in enumerate(gap_values):
-            print(f"\n🔍 Testing epsilon {epsilon_mult:.3f}, gap_values {gap_mult:.3f}...")
+            # print(f"\n🔍 Testing epsilon {epsilon_mult:.3f}, gap_values {gap_mult:.3f}...")
 
             # -------------------------------------------------
             # 4a) Gap closing: morphological closing in X and Y
@@ -836,7 +836,7 @@ def detectOuterContours(detect_img, output_img = None, color = [255, 255, 255]):
                 'perp_score': perp_score,
                 'filtered_points': filtered.copy()
             }
-            print(f"score: {score:.3f}, area: {area:.3f}, perp_score: {perp_score:.3f}")
+            # print(f"score: {score:.3f}, area: {area:.3f}, perp_score: {perp_score:.3f}")
 
 
             # -------------------------------------------------
@@ -862,7 +862,7 @@ def detectOuterContours(detect_img, output_img = None, color = [255, 255, 255]):
             # Accept when corners are mostly right-angled, or when combined score is high.
             if perp_score >= 0.90 or (score > 0.8 and perp_score >= 0.8):
             # if perp_score >= 0.99:
-                print(f"✅ Perfect at ε={epsilon_mult:.3f}, gap={gap_mult:.3f}")
+                # print(f"✅ Perfect at ε={epsilon_mult:.3f}, gap={gap_mult:.3f}")
                 # plt.tight_layout()
                 # plt.show()
                 return filtered, vis, perp_score
@@ -877,7 +877,7 @@ def detectOuterContours(detect_img, output_img = None, color = [255, 255, 255]):
             # 4j) Last-chance acceptance at a specific epsilon
             # -------------------------------------------------
             if epsilon_mult == 0.02 and perp_score > 0.85:
-                print(f"✅ LAST CHANCE Perfect at ε={epsilon_mult:.3f}, gap={gap_mult:.3f}")
+                # print(f"✅ LAST CHANCE Perfect at ε={epsilon_mult:.3f}, gap={gap_mult:.3f}")
                 # plt.tight_layout()
                 # plt.show()
                 return filtered, vis, perp_score
@@ -936,7 +936,7 @@ gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
 # ============================================================
 # Detect outer contour and get a perpendicularity reference
 contour, img, perp_score = detectOuterContours(gray, blank_image, color=(255,255,255))
-print("detectOuterContours output")
+# print("detectOuterContours output")
 # display(Image.fromarray(img)) # quick preview of detectOuterContours output
 # ============================================================
 
@@ -953,7 +953,7 @@ contour = max(contours, key=cv2.contourArea)  # Get largest contour
 
 # Refine approximation based on perpendicularity score we got from detectOuterContours
 # Adapt epsilon multiplier heuristically from the measured perp_score.
-print("perp_score", perp_score)
+# print("perp_score", perp_score)
 if perp_score >= 0.99:
     epsilon_mult = 0.0001
 elif perp_score >= 0.9:
@@ -995,7 +995,7 @@ cv2.drawContours(vis_image, [contour], -1, (255, 255, 255), 2)
 # -----------------------
 # Reminder: OpenCV uses image coordinates (x right, y down). If you convert to a metric world,
 #           remember to handle axis directions and origin appropriately.
-print("Before scaling:", [[point[0][0], point[0][1]] for point in contour])
+# print("Before scaling:", [[point[0][0], point[0][1]] for point in contour])
 
 # Save scaled reference polygon for downstream consumers (divide by 100 as an example)
 floor_boxes = [[point[0][0]/100, point[0][1]/100] for point in contour]
@@ -1294,14 +1294,14 @@ mask = np.zeros((height, width), dtype=np.uint8)
 contour = contour  # (assumed already available from prior step)
 # contour = get_floor_boundary(img)  # alternative approach if automated
 
-print("contour",contour)
+# print("contour",contour)
 
 # Slightly expand the contour outward by shifting relative to centroid.
 # This helps close small gaps and ensures mask covers full boundary.
 scaled_contour = contour + np.sign(contour - np.mean(contour, axis=0)) * np.array([[[2, 2]]]) 
 scaled_contour = np.array(scaled_contour, dtype=np.int32)  # Convert to int32
 
-print("scaled_contour",scaled_contour)
+# print("scaled_contour",scaled_contour)
 
 # Draw filled contour on mask
 cv2.drawContours(mask, [scaled_contour], -1, (255), -1)  # -1 means "fill inside"
@@ -1319,7 +1319,7 @@ masked_img = cv2.add(masked_img, white_outside)  # combine masked floorplan with
 # display(Image.fromarray(mask))  # Show mask
 floor_mask_test = mask
 # display(Image.fromarray(masked_img))  # Show masked image
-print("MASK Done")
+# print("MASK Done")
 
 # ================================ GRAYSCALE ================================
 # Convert masked image to grayscale for morphology/contours
@@ -1360,16 +1360,16 @@ scale = 100    # pixel-to-world scaling factor
 # Convert boxes (2D polygons) into 3D quads (nx4 faces)
 verts, faces, wall_amount = create_nx4_verts_and_faces(wall_boxes, wall_height, scale)
 
-print("verts",verts)
-print("wall_amount",wall_amount)  
-print("wall_boxes",wall_boxes)
+# print("verts",verts)
+# print("wall_amount",wall_amount)  
+# print("wall_boxes",wall_boxes)
 
 
-# Debug loop through wall boxes
-box = []
-wall = []
-for box in wall_boxes:
-    print("box",box)
+# # Debug loop through wall boxes
+# box = []
+# wall = []
+# for box in wall_boxes:
+#     print("box",box)
 
 
 # ## 🧱[Wall]: clean small walls
@@ -1454,11 +1454,11 @@ wall_vertices = cleaned_walls
 # In[27]:
 
 
-# wall_vertices = create_vertices(wall_boxes)
+# # wall_vertices = create_vertices(wall_boxes)
 
-print("wall_vertices:", wall_vertices )
+# print("wall_vertices:", wall_vertices )
 
-print("len(wall_vertices)",len(wall_vertices))
+# print("len(wall_vertices)",len(wall_vertices))
 
 
 
@@ -2031,11 +2031,11 @@ polygons, types, room_polygons, room_types = get_polygons((heatmaps, rooms, icon
 
 # Find the index of "Window" in the icon_classes list
 window_class_number = icon_classes.index("Window")
-print(f"Window icon class number: {window_class_number}")
+# print(f"Window icon class number: {window_class_number}")
 
 # Collect indices of polygons labeled as Window icons
 window_polygon_numbers=[i for i,j in enumerate(types) if j['class']==icon_classes.index("Window")and (j['type']=='icon')]
-print("window_polygon_numbers",window_polygon_numbers)
+# print("window_polygon_numbers",window_polygon_numbers)
 
 
 # Collect polygons into "boxes" format for mesh generation
@@ -2059,13 +2059,13 @@ verts, faces, window_amount = create_nx4_verts_and_faces(boxes, wall_height, sca
 
 # Convert polygons into simplified vertex edges
 window_vertices = create_vertices(boxes)
-print("window_vertices:", window_vertices )
-print("len(window_vertices)",len(window_vertices))
+# print("window_vertices:", window_vertices )
+# print("len(window_vertices)",len(window_vertices))
 
 
 # Save extracted window vertices to file for later use
 # save_to_file(os.path.join(tmp_dir, "windows_vertices"), window_vertices, True)
-print("--------------------------------")
+# print("--------------------------------")
 
 
 # ---- scale point to vector ------
@@ -2093,7 +2093,7 @@ print("--------------------------------")
 # print(icon_classes.index("Door"))
 # Collect indices of polygons labeled as Door icons
 door_polygon_numbers=[i for i,j in enumerate(types) if (j['class']==icon_classes.index("Door")) and (j['type']=='icon')]
-print("door_polygon_numbers",door_polygon_numbers)
+# print("door_polygon_numbers",door_polygon_numbers)
 
 
 
@@ -2118,9 +2118,9 @@ verts, faces, door_amount = create_nx4_verts_and_faces(boxes, wall_height, scale
 # Convert polygons into simplified vertex edges
 door_vertices = create_vertices(boxes)
 
-print("door_vertices:", door_vertices )
+# print("door_vertices:", door_vertices )
 
-print("len(door_vertices)",len(door_vertices))
+# print("len(door_vertices)",len(door_vertices))
 
 
 
@@ -2128,7 +2128,7 @@ print("len(door_vertices)",len(door_vertices))
 
 # Collect indices of polygons labeled as walls
 wall_type_polygon_numbers=[i for i,j in enumerate(types) if j['type']=='wall']
-print("wall_type_polygon_numbers",wall_type_polygon_numbers)
+# print("wall_type_polygon_numbers",wall_type_polygon_numbers)
 
 
 boxes=[]
@@ -2501,7 +2501,7 @@ def detach_intersecting_objects(obj_vertices, wall_vertices):
 # ============================================================
 # Process detected window vertices: intersection cleanup & rectification
 # ============================================================
-print("INITIAL windows", window_vertices)
+# print("INITIAL windows", window_vertices)
 
 # Visualize current windows with walls
 plot_vertices(wall_vertices, window_vertices)
@@ -2509,7 +2509,7 @@ plot_vertices(wall_vertices, window_vertices)
 # Example of detected window vertices before processing
 # window_vertices = [[[[4.71, 2.02], [5.47, 2.02]], [[5.47, 2.02], [5.47, 2.2]], [[5.47, 2.2], [4.71, 2.2]], [[4.71, 2.2], [4.71, 2.02]]], [[[4.02, 2.02], [4.7, 2.02]], [[4.7, 2.02], [4.7, 2.2]], [[4.7, 2.2], [4.02, 2.2]], [[4.02, 2.2], [4.02, 2.02]]], [[[1.56, 2.02], [3.04, 2.02]], [[3.04, 2.02], [3.04, 2.2]], [[3.04, 2.2], [1.56, 2.2]], [[1.56, 2.2], [1.56, 2.02]]]]
 
-print("window_vertices", window_vertices)
+# print("window_vertices", window_vertices)
 
 
 if window_vertices:
@@ -2530,7 +2530,7 @@ if window_vertices:
     plot_vertices(wall_vertices, Detached_windows)
 
     # Step 4: Save cleaned windows as updated window set
-    print("Detached_windows", Detached_windows)
+    # print("Detached_windows", Detached_windows)
     window_vertices = Detached_windows
 
 
@@ -2546,11 +2546,11 @@ if window_vertices:
 # ============================================================
 # Process detected door vertices: intersection cleanup & rectification
 # ============================================================
-print("INITIAL Doors", door_vertices)
+# print("INITIAL Doors", door_vertices)
 # Visualize current door with walls
 plot_vertices(wall_vertices, door_vertices)
 
-print("door_vertices", door_vertices)
+# print("door_vertices", door_vertices)
 
 if door_vertices:
     # Step 1: Iteratively detach door edges intersecting with wall edges
@@ -2570,7 +2570,7 @@ if door_vertices:
     plot_vertices(wall_vertices, Detached_doors)
 
     # Step 4: Save cleaned doors as updated doors set
-    print("Detached_doors", Detached_doors)
+    # print("Detached_doors", Detached_doors)
     door_vertices = Detached_doors
 
 
@@ -2771,7 +2771,7 @@ def snap_object_sides_to_walls(object_vertices, wall_vertices):
             # Reconstruct missing vertical edges from updated horizontals
             new_obj[1] = [new_obj[0][1], new_obj[2][0]]  # Right edge
             new_obj[3] = [new_obj[2][1], new_obj[0][0]]  # Left edge
-            print("OUTPUT", new_obj)
+            # print("OUTPUT", new_obj)
             
         # ---------------- Horizontal Alignment ----------------
         else:  # horizontal
@@ -2795,7 +2795,7 @@ def snap_object_sides_to_walls(object_vertices, wall_vertices):
             # Reconstruct missing horizontal edges from updated verticals
             new_obj[0] = [new_obj[1][1], new_obj[3][1]]  # Top edge
             new_obj[2] = [new_obj[3][0], new_obj[1][0]]  # Bottom edge
-            print("OUTPUT", new_obj)
+            # print("OUTPUT", new_obj)
         
         updated_objs.append(new_obj)  # save updated rectangle
     
@@ -2818,8 +2818,8 @@ def snap_object_sides_to_walls(object_vertices, wall_vertices):
 # ============================================================
 
 # Step 0: Visualize initial windows before modification
-print("FIRST PLOT of Detached_windows")
-plot_vertices(wall_vertices, window_vertices)
+# print("FIRST PLOT of Detached_windows")
+# plot_vertices(wall_vertices, window_vertices)
 
 # Detached_windows = fix_rectangles(window_vertices)
 # print("FIX RECTANGLE")
@@ -2844,8 +2844,8 @@ for i, window in enumerate(window_vertices):
 
 # Save scaled set
 scaled_windows = window_vertices
-print("scaled_windows")
-plot_vertices(wall_vertices, scaled_windows)
+# print("scaled_windows")
+# plot_vertices(wall_vertices, scaled_windows)
 
 
 # ------------------------------------------------------------
@@ -2859,8 +2859,8 @@ snapped_windows = fix_rectangles(snapped_windows)
 # print("\nUpdated window vertices:")
 # for i, door in enumerate(snapped_windows, 1):
 #     print(f"Window {i}: {door}")
-print("SNAP TO WALLS")
-plot_vertices(wall_vertices, snapped_windows)
+# print("SNAP TO WALLS")
+# plot_vertices(wall_vertices, snapped_windows)
 # # print("snapped_windows", snapped_windows)
 
 # ------------------------------------------------------------
@@ -2880,8 +2880,8 @@ window_vertices = snapped_windows
 # ============================================================
 
 # Step 0: Visualize initial doors before modification
-print("FIRST PLOT of Detached_doors")
-plot_vertices(wall_vertices, door_vertices)
+# print("FIRST PLOT of Detached_doors")
+# plot_vertices(wall_vertices, door_vertices)
 
 # Detached_doors = fix_rectangles(door_vertices)
 # print("FIX RECTANGLE")
@@ -2906,8 +2906,8 @@ for i, door in enumerate(door_vertices):
 
 # Save scaled set
 scaled_doors = door_vertices
-print("scaled_doors")
-plot_vertices(wall_vertices, scaled_doors)
+# print("scaled_doors")
+# plot_vertices(wall_vertices, scaled_doors)
 
 
 # ------------------------------------------------------------
@@ -2921,8 +2921,8 @@ snapped_doors = fix_rectangles(snapped_doors)
 # print("\nUpdated door vertices:")
 # for i, door in enumerate(snapped_doors, 1):
 #     print(f"Door {i}: {door}")
-print("SNAP TO WALLS")
-plot_vertices(wall_vertices, snapped_doors)
+# print("SNAP TO WALLS")
+# plot_vertices(wall_vertices, snapped_doors)
 # # print("snapped_windows", snapped_windows)
 
 # ------------------------------------------------------------
@@ -3004,15 +3004,15 @@ def clean_duplicates(door_vertices, tolerance=0.2):
 # Clean duplicates
 no_dup_windows = clean_duplicates(window_vertices)
 # Preview Results
-print("CLEAN DUPLICATES")
-plot_vertices(wall_vertices, no_dup_windows)
-print("no_dup_windows\n", no_dup_windows)
+# print("CLEAN DUPLICATES")
+# plot_vertices(wall_vertices, no_dup_windows)
+# print("no_dup_windows\n", no_dup_windows)
 
 # Fix Rectangles
 no_dup_windows = fix_rectangles(no_dup_windows)
 # Preview Results
-print("FIX RECTANGLE")
-plot_vertices(wall_vertices, no_dup_windows)
+# print("FIX RECTANGLE")
+# plot_vertices(wall_vertices, no_dup_windows)
 
 
 # save_to_file(os.path.join(tmp_dir, "windows_vertices"), snapped_windows, True)
@@ -3029,15 +3029,15 @@ window_vertices = no_dup_windows
 # Clean duplicates
 no_dup_doors = clean_duplicates(door_vertices)
 # Preview Results
-print("CLEAN DUPLICATES")
-plot_vertices(wall_vertices, no_dup_doors)
-print("no_dup_doors\n", no_dup_doors)
+# print("CLEAN DUPLICATES")
+# plot_vertices(wall_vertices, no_dup_doors)
+# print("no_dup_doors\n", no_dup_doors)
 
 # Fix Rectangle
 no_dup_doors = fix_rectangles(no_dup_doors)
 # Preview Results
-print("FIX RECTANGLE")
-plot_vertices(wall_vertices, no_dup_doors)
+# print("FIX RECTANGLE")
+# plot_vertices(wall_vertices, no_dup_doors)
 
 
 # save_to_file(os.path.join(tmp_dir, "doors_vertices"), snapped_doors, True)
@@ -3090,8 +3090,8 @@ window_polygons = [edges_to_polygon(w) for w in window_vertices]
 door_polygons = [edges_to_polygon(d) for d in door_vertices]
 
 
-print("door_vertices", door_vertices)
-print("window_vertices", window_vertices)
+# print("door_vertices", door_vertices)
+# print("window_vertices", window_vertices)
 
 # ============================================================
 # Collision detection between windows and doors
@@ -3268,15 +3268,15 @@ plot_vertices(wall_vertices, processed_windows)
 
 # Print results
 # print(f"Original number of windows: {len(test_windows)}")
-print(f"Number of windows after processing: {len(processed_windows)}")
+# print(f"Number of windows after processing: {len(processed_windows)}")
 
 
 # save_to_file(os.path.join(tmp_dir, "windows_vertices"), processed_windows, True)
 
 
 # Step 2: Save processed set as current windows
-print("processed_windows")
-print(processed_windows)
+# print("processed_windows")
+# print(processed_windows)
 window_vertices = processed_windows
 
 # Step 3: Ensure all windows are valid rectangles
@@ -3304,15 +3304,15 @@ plot_vertices(wall_vertices, processed_doors)
 
 # Print results
 # print(f"Original number of windows: {len(test_windows)}")
-print(f"Number of windows after processing: {len(processed_doors)}")
+# print(f"Number of windows after processing: {len(processed_doors)}")
 
 
 # save_to_file(os.path.join(tmp_dir, "doors_vertices"), processed_doors, True)
 
 
 # Step 2: Save processed set as current windows
-print("processed_doors")
-print(processed_doors)
+# print("processed_doors")
+# print(processed_doors)
 door_vertices = processed_doors
 # Step 3: Ensure all windows are valid rectangles
 door_vertices = fix_rectangles(door_vertices)
@@ -3800,7 +3800,7 @@ elif torch.backends.mps.is_available():
 else:
     device = torch.device("cpu")
 
-print("Running on:", device)
+# print("Running on:", device)
 
 # ───────────────────────────────────────────────────────────
 # 1.  Build the network exactly like in the checkpoint
@@ -3967,7 +3967,7 @@ for boundary in outter_boundaries:
     boundary[0] = (boundary[0] / 100)
     boundary[1] = (boundary[1] / 100)
 
-print("outter_boundaries", outter_boundaries)
+# print("outter_boundaries", outter_boundaries)
 
 
 # ### Test Cubi-walls vs cv2-walls
@@ -3984,14 +3984,14 @@ contours, _ = cv2.findContours(wall_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIM
 filled_wall_img = np.zeros_like(wall_img)
 cv2.drawContours(filled_wall_img, contours, -1, 255, thickness=cv2.FILLED)
 
-print("filled_wall_img", filled_wall_img.shape)
-# display(Image.fromarray(filled_wall_img))
+# print("filled_wall_img", filled_wall_img.shape)
+# # display(Image.fromarray(filled_wall_img))
 
-print("mask", mask.shape)
-# display(Image.fromarray(mask))
+# print("mask", mask.shape)
+# # display(Image.fromarray(mask))
 
-print("wall_img", wall_img.shape)
-print("img", wall_img)
+# print("wall_img", wall_img.shape)
+# print("img", wall_img)
 
 # Show intersection overlay
 # Create a 3-channel RGB image for visualization
@@ -4208,6 +4208,7 @@ def main_floorplan_processing(img_path, tmp_dir):
         if not os.path.exists(model_path):
             import subprocess
             subprocess.run(["gdown", "https://drive.google.com/uc?id=1gRB7ez1e4H7a9Y09lLqRuna0luZO5VRK"])
+            
     
     # Read and process the image
     img = cv2.imread(img_path)
@@ -4502,4 +4503,3 @@ if __name__ == "__main__":
         print(f"Results saved to {tmp_dir}/")
     else:
         print("Usage: python flooplan_detector.py <image_path>")
-
