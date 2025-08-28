@@ -4203,20 +4203,20 @@ def main_floorplan_processing(img_path, tmp_dir):
     from shapely.geometry import LineString, Point
     from shapely.geometry import LineString
     
-    # # Check for model file
-    # model_path = 'model/model_1427.pth'
-    # if not os.path.exists(model_path):
-    #     # Try alternative path
-    #     model_path = 'model_best_val_loss_var.pkl'
-    #     if not os.path.exists(model_path):
-    #         import subprocess
-    #         subprocess.run(["gdown", "https://drive.google.com/uc?id=1gRB7ez1e4H7a9Y09lLqRuna0luZO5VRK"])
+    # Check for model file
+    model_path = 'model/model_1427.pth'
+    if not os.path.exists(model_path):
+        # Try alternative path
+        model_path = 'model_best_val_loss_var.pkl'
+        if not os.path.exists(model_path):
+            import subprocess
+            subprocess.run(["gdown", "https://drive.google.com/uc?id=1gRB7ez1e4H7a9Y09lLqRuna0luZO5VRK"])
     # Load the model directly
 
-    # Check for model file
-    model_path = 'model_best_val_loss_var.pkl'
-    if not os.path.exists(model_path):
-        raise FileNotFoundError(f"Model file not found: {model_path}")
+    # # Check for model file
+    # model_path = 'model_best_val_loss_var.pkl'
+    # if not os.path.exists(model_path):
+    #     raise FileNotFoundError(f"Model file not found: {model_path}")
     
     # Read and process the image
     img = cv2.imread(img_path)
@@ -4506,7 +4506,6 @@ def main_floorplan_processing(img_path, tmp_dir):
 # If this file is run directly, execute the main processing
 if __name__ == "__main__":
     # This allows the file to be run directly for testing
-    app.run(host="0.0.0.0", port=5050, debug=False, use_reloader=False)
     import sys
     if len(sys.argv) > 1:
         img_path = sys.argv[1]
