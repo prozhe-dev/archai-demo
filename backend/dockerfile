@@ -1,28 +1,48 @@
 # ---- builder ----
     FROM python:3.12-slim AS builder
     WORKDIR /app
+    
+    # Install system dependencies needed for building lmdb and other packages
+    RUN apt-get update && apt-get install -y \
+        build-essential \
+        patch \
+        && rm -rf /var/lib/apt/lists/*
+    
     ENV PIP_NO_CACHE_DIR=1 PIP_DISABLE_PIP_VERSION_CHECK=1
     
     COPY requirements.txt .
+    
+    # Create a lightweight venv (symlinks by default; no --copies)
     RUN python -m venv /opt/venv \
      && . /opt/venv/bin/activate \
-     && pip install --upgrade pip \
+     && pip install --upgrade pip
+    
+    # Install CPU-only PyTorch wheels (SMALLER; no CUDA libs)
+    RUN . /opt/venv/bin/activate \
      && pip install --index-url https://download.pytorch.org/whl/cpu \
-          torch==2.7.0 torchvision==0.22.0 \
-     && pip install -r requirements.txt \
-     && python - <<'PY'
-    import torch, torchvision
-    print("torch:", torch.__version__)
-    print("torchvision:", torchvision.__version__)
-    PY
+          torch==2.7.0 torchvision==0.22.0
+    
+    # Now install the rest
+    RUN . /opt/venv/bin/activate \
+     && pip install -r requirements.txt
     
     # ---- runner ----
     FROM python:3.12-slim AS runner
     WORKDIR /app
-    ENV PATH="/opt/venv/bin:$PATH" PYTHONUNBUFFERED=1
+    
+    ENV PATH="/opt/venv/bin:$PATH" \
+        PYTHONDONTWRITEBYTECODE=1 \
+        PYTHONUNBUFFERED=1 \
+        PIP_NO_CACHE_DIR=1
+    
+    # bring the minimal venv only (no compilers, no caches)
     COPY --from=builder /opt/venv /opt/venv
+    
+    # copy ONLY what you need at runtime
     COPY index.py ./index.py
     COPY flooplan_detector.py ./flooplan_detector.py
-    EXPOSE 5050
-    CMD ["/opt/venv/bin/python", "index.py"]
+    COPY model/ ./model/
+    COPY utils/ ./utils/
     
+    EXPOSE 5050
+    CMD ["python", "index.py"]
