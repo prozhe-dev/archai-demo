@@ -109,7 +109,7 @@ from shapely.ops import unary_union
 
 
 img = cv2.imread(img_path)
-display(Image.fromarray(img))
+# display(Image.fromarray(img))
 
 
 # In[6]:
@@ -142,7 +142,7 @@ img = cv2.imread(main_img_path)
 # img = cv2.stylization(img, sigma_s=0.5, sigma_r=10)
 
 
-display(Image.fromarray(img))
+# display(Image.fromarray(img))
 
 
 # # ↓ Download the model .pkl
@@ -700,7 +700,7 @@ def detectOuterContours(detect_img, output_img = None, color = [255, 255, 255]):
     #   iterations: number of dilation passes
     bw = cv2.dilate(bw, np.ones((3, 3), np.uint8), 1)
     print("dilate")
-    display(Image.fromarray(bw))
+    # display(Image.fromarray(bw))
 
     
 
@@ -1035,7 +1035,7 @@ largest_contour = max(contours, key=cv2.contourArea)
 # --- Draw largest contour on a 1-channel canvas ---
 result_img = np.zeros_like(grey)
 cv2.drawContours(result_img, [largest_contour], -1, (255,255,255), 2) # color=255 since canvas is 1-channel
-display(Image.fromarray(result_img))
+# display(Image.fromarray(result_img))
 
 
 # --- Export scaled vertices (Nx1x2 -> list[[x/100, y/100], ...]) ---
@@ -1316,22 +1316,22 @@ masked_img = cv2.add(masked_img, white_outside)  # combine masked floorplan with
 
 
 # Optional: Display the mask and masked image
-display(Image.fromarray(mask))  # Show mask
+# display(Image.fromarray(mask))  # Show mask
 floor_mask_test = mask
-display(Image.fromarray(masked_img))  # Show masked image
+# display(Image.fromarray(masked_img))  # Show masked image
 print("MASK Done")
 
 # ================================ GRAYSCALE ================================
 # Convert masked image to grayscale for morphology/contours
 gray = cv2.cvtColor(masked_img, cv2.COLOR_BGR2GRAY)
-display(Image.fromarray(gray))
+# display(Image.fromarray(gray))
 
 # ================================ CLOSE ================================
 # Morphological closing: dilation followed by erosion
 # Purpose: fills small holes and gaps in the walls
 kernel = np.ones((5,5),np.uint8)
 closed = cv2.morphologyEx(gray, cv2.MORPH_CLOSE, kernel)
-display(Image.fromarray(closed))
+# display(Image.fromarray(closed))
 
 
 
@@ -1346,7 +1346,7 @@ wall_img = wall_filter(closed)
 # Detect contours of walls with high precision
 wall_boxes, img = detectPreciseBoxes(wall_img)
 
-display(Image.fromarray(wall_img))
+# display(Image.fromarray(wall_img))
 
 
 # ================================ VERTS & FACES ================================
@@ -1435,7 +1435,7 @@ def clean_small_walls_shapely(wall_vertices, min_area=0.012):
     return cleaned_walls
 
 # Preview the input wall image
-display(Image.fromarray(wall_img))
+# display(Image.fromarray(wall_img))
 
 # Create Wall Vertices
 wall_vertices = create_vertices(wall_boxes)
@@ -3856,9 +3856,9 @@ def pad_to_multiple_of_4(img):
 # img_path = "Images/example8.png"
 img = cv2.imread(img_path)
 gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-display(Image.fromarray(gray))
+# display(Image.fromarray(gray))
 img = cv2.detailEnhance(img, sigma_s=100, sigma_r=10)
-display(Image.fromarray(img))
+# display(Image.fromarray(img))
 
 # Convert to RGB
 rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -3880,18 +3880,18 @@ if pad_w > 0:
 prob, mask = prob_padded, mask_padded
 
 # Visualize
-plt.figure(figsize=(12,5))
-plt.subplot(1,2,1); plt.title("wall probability"); plt.axis('off')
-plt.imshow(prob, cmap='hot'); plt.colorbar(fraction=0.046)
-plt.subplot(1,2,2); plt.title("binary wall mask"); plt.axis('off')
-plt.imshow(mask, cmap='gray')
-# display(Image.fromarray((mask * 255).astype(np.uint8)))
-display(Image.fromarray(mask))
-plt.tight_layout(); # plt.show()  # Commented out for non-interactive execution
+# plt.figure(figsize=(12,5))
+# plt.subplot(1,2,1); plt.title("wall probability"); plt.axis('off')
+# plt.imshow(prob, cmap='hot'); plt.colorbar(fraction=0.046)
+# plt.subplot(1,2,2); plt.title("binary wall mask"); plt.axis('off')
+# plt.imshow(mask, cmap='gray')
+# # display(Image.fromarray((mask * 255).astype(np.uint8)))
+# display(Image.fromarray(mask))
+# plt.tight_layout(); # plt.show()  # Commented out for non-interactive execution
 
 # =================================================
 
-print("mask", mask)
+# print("mask", mask)
 
 
 
@@ -3933,7 +3933,7 @@ contour = straighten_rectilinear(contour)
 contour = straighten_rectilinear(contour)
 
 cv2.drawContours(vis_image, [contour], -1, (255, 255, 255), 2)
-display(Image.fromarray(vis_image))
+# display(Image.fromarray(vis_image))
 
 
 
@@ -3985,10 +3985,10 @@ filled_wall_img = np.zeros_like(wall_img)
 cv2.drawContours(filled_wall_img, contours, -1, 255, thickness=cv2.FILLED)
 
 print("filled_wall_img", filled_wall_img.shape)
-display(Image.fromarray(filled_wall_img))
+# display(Image.fromarray(filled_wall_img))
 
 print("mask", mask.shape)
-display(Image.fromarray(mask))
+# display(Image.fromarray(mask))
 
 print("wall_img", wall_img.shape)
 print("img", wall_img)
@@ -4004,7 +4004,7 @@ overlay[(filled_wall_img > 0) & (mask == 0)] = [0, 0, 255]
 # Green for intersection
 overlay[(mask > 0) & (filled_wall_img > 0)] = [0, 255, 0]
 
-display(Image.fromarray(overlay))
+# display(Image.fromarray(overlay))
 
 
 # ## Seperated Cubi - Windows
@@ -4067,20 +4067,20 @@ from PIL import Image                                   # for display()
 # bgr      = cv2.imread(img_path)
 img = cv2.imread(img_path)
 gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-display(Image.fromarray(gray))
+# display(Image.fromarray(gray))
 img = cv2.detailEnhance(img, sigma_s=100, sigma_r=10)
-display(Image.fromarray(img))
+# display(Image.fromarray(img))
 
 rgb      = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
 prob, win_mask = window_mask_from_numpy(rgb, thresh=0.05)    # tweak threshold!
 
-plt.figure(figsize=(12,5))
-plt.subplot(1,2,1); plt.title("window probability"); plt.axis('off')
-plt.imshow(prob, cmap='hot'); plt.colorbar(fraction=0.046)
-plt.subplot(1,2,2); plt.title("binary window mask"); plt.axis('off')
-plt.imshow(win_mask, cmap='gray')
-plt.tight_layout(); plt.show()
+# plt.figure(figsize=(12,5))
+# plt.subplot(1,2,1); plt.title("window probability"); plt.axis('off')
+# plt.imshow(prob, cmap='hot'); plt.colorbar(fraction=0.046)
+# plt.subplot(1,2,2); plt.title("binary window mask"); plt.axis('off')
+# plt.imshow(win_mask, cmap='gray')
+# plt.tight_layout(); plt.show()
 
 
 # ## Seperated Cubi - Doors
@@ -4143,21 +4143,21 @@ from PIL import Image                                   # for display()
 # bgr      = cv2.imread(img_path)
 img = cv2.imread(img_path)
 gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-display(Image.fromarray(gray))
+# display(Image.fromarray(gray))
 img = cv2.detailEnhance(img, sigma_s=100, sigma_r=100)
-display(Image.fromarray(img))
+# display(Image.fromarray(img))
 
 rgb      = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
 
 prob, door_mask = window_mask_from_numpy(rgb, thresh=0.25)    # tweak threshold!
 
-plt.figure(figsize=(12,5))
-plt.subplot(1,2,1); plt.title("window probability"); plt.axis('off')
-plt.imshow(prob, cmap='hot'); plt.colorbar(fraction=0.046)
-plt.subplot(1,2,2); plt.title("binary window mask"); plt.axis('off')
-plt.imshow(door_mask, cmap='gray')
-plt.tight_layout(); # plt.show()  # Commented out for non-interactive execution
+# plt.figure(figsize=(12,5))
+# plt.subplot(1,2,1); plt.title("window probability"); plt.axis('off')
+# plt.imshow(prob, cmap='hot'); plt.colorbar(fraction=0.046)
+# plt.subplot(1,2,2); plt.title("binary window mask"); plt.axis('off')
+# plt.imshow(door_mask, cmap='gray')
+# plt.tight_layout(); # plt.show()  # Commented out for non-interactive execution
 
 
 def main_floorplan_processing(img_path, tmp_dir):
