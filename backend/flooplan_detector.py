@@ -4377,7 +4377,6 @@ def main_floorplan_processing(img_path, tmp_dir):
         
         heatmaps, rooms, icons = split_prediction(prediction, img_size, split)
         polygons, types, room_polygons, room_types = get_polygons((heatmaps, rooms, icons), 0.2, [1, 2])
-    
     # Extract windows
     window_class_number = icon_classes.index("Window")
     window_polygon_numbers=[i for i,j in enumerate(types) if j['class']==icon_classes.index("Window")and (j['type']=='icon')]
