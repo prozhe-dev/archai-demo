@@ -1521,7 +1521,7 @@ import cv2
 from model import get_model
 from utils.loaders import FloorplanSVG, DictToTensor, Compose, RotateNTurns
 from utils.plotting import segmentation_plot, polygons_to_image, draw_junction_from_dict,           discrete_cmap
-discrete_cmap()
+# discrete_cmap()
 from utils.post_prosessing import split_prediction, get_polygons, split_validation
 from mpl_toolkits.axes_grid1 import AxesGrid
 
@@ -1940,67 +1940,67 @@ polygons, types, room_polygons, room_types = get_polygons((heatmaps, rooms, icon
 # In[29]:
 
 
-"""
-    Visualize polygon-to-image segmentation results for rooms and icons.
+# """
+#     Visualize polygon-to-image segmentation results for rooms and icons.
 
-    Uses `polygons_to_image` output (segmentation maps) and displays them 
-    with discrete colormaps (`rooms`, `icons_furu`) registered beforehand 
-    in plotting.py. Room segmentation is labeled with room_classes, 
-    icon segmentation with icon_classes.
+#     Uses `polygons_to_image` output (segmentation maps) and displays them 
+#     with discrete colormaps (`rooms`, `icons_furu`) registered beforehand 
+#     in plotting.py. Room segmentation is labeled with room_classes, 
+#     icon segmentation with icon_classes.
 
-    @Requires:
-        - matplotlib.pyplot as plt
-        - numpy as np
-        - polygons_to_image(polygons, types, room_polygons, room_types, height, width)
-        - discrete_cmap() already called to register custom colormaps
-        - room_classes, icon_classes lists
-"""
+#     @Requires:
+#         - matplotlib.pyplot as plt
+#         - numpy as np
+#         - polygons_to_image(polygons, types, room_polygons, room_types, height, width)
+#         - discrete_cmap() already called to register custom colormaps
+#         - room_classes, icon_classes lists
+# """
 
-# Convert polygons into segmentation masks
-pol_room_seg, pol_icon_seg = polygons_to_image(polygons, types, room_polygons, room_types, height, width)
-
-
-# ---------------- Room Segmentation ----------------
-plt.figure(figsize=(12,12))
-ax = plt.subplot(1, 1, 1)
-ax.axis('off')
-
-# Display room segmentation with registered 'rooms' colormap
-rseg = ax.imshow(pol_room_seg, cmap='rooms', vmin=0, vmax=n_rooms-0.1)
-
-# Add colorbar with room class labels
-cbar = plt.colorbar(rseg, ticks=np.arange(n_rooms) + 0.5, fraction=0.046, pad=0.01)
-cbar.ax.set_yticklabels(room_classes, fontsize=20)
-plt.tight_layout()
-
-# Save the plot as an image file
-# plt.savefig('room_segmentation.png', dpi=300, bbox_inches='tight')
-
-# # Display the saved image using cv2
-# import cv2
-# saved_img = cv2.imread('room_segmentation.png')
-# cv2.imshow('Room Segmentation', saved_img)
-# cv2.waitKey(0)
-# cv2.destroyAllWindows()
-
-# plt.show()
-
-# ---------------- Icon Segmentation ----------------
-plt.figure(figsize=(12,12))
-ax = plt.subplot(1, 1, 1)
-ax.axis('off')
-
-# Display icon segmentation with registered 'icons_furu' colormap
-iseg = ax.imshow(pol_icon_seg, cmap='icons_furu', vmin=0, vmax=n_icons-0.1)
-
-# Add colorbar with icon class labels
-cbar = plt.colorbar(iseg, ticks=np.arange(n_icons) + 0.5, fraction=0.046, pad=0.01)
-cbar.ax.set_yticklabels(icon_classes, fontsize=20)
-plt.tight_layout()
-# plt.show()  # Commented out for non-interactive execution
+# # Convert polygons into segmentation masks
+# pol_room_seg, pol_icon_seg = polygons_to_image(polygons, types, room_polygons, room_types, height, width)
 
 
-# ## 🤖 → get 🪟+🚪+🧱[window + door + wall] (unclean)
+# # ---------------- Room Segmentation ----------------
+# plt.figure(figsize=(12,12))
+# ax = plt.subplot(1, 1, 1)
+# ax.axis('off')
+
+# # Display room segmentation with registered 'rooms' colormap
+# rseg = ax.imshow(pol_room_seg, cmap='rooms', vmin=0, vmax=n_rooms-0.1)
+
+# # Add colorbar with room class labels
+# cbar = plt.colorbar(rseg, ticks=np.arange(n_rooms) + 0.5, fraction=0.046, pad=0.01)
+# cbar.ax.set_yticklabels(room_classes, fontsize=20)
+# plt.tight_layout()
+
+# # Save the plot as an image file
+# # plt.savefig('room_segmentation.png', dpi=300, bbox_inches='tight')
+
+# # # Display the saved image using cv2
+# # import cv2
+# # saved_img = cv2.imread('room_segmentation.png')
+# # cv2.imshow('Room Segmentation', saved_img)
+# # cv2.waitKey(0)
+# # cv2.destroyAllWindows()
+
+# # plt.show()
+
+# # ---------------- Icon Segmentation ----------------
+# plt.figure(figsize=(12,12))
+# ax = plt.subplot(1, 1, 1)
+# ax.axis('off')
+
+# # Display icon segmentation with registered 'icons_furu' colormap
+# iseg = ax.imshow(pol_icon_seg, cmap='icons_furu', vmin=0, vmax=n_icons-0.1)
+
+# # Add colorbar with icon class labels
+# cbar = plt.colorbar(iseg, ticks=np.arange(n_icons) + 0.5, fraction=0.046, pad=0.01)
+# cbar.ax.set_yticklabels(icon_classes, fontsize=20)
+# plt.tight_layout()
+# # plt.show()  # Commented out for non-interactive execution
+
+
+# # ## 🤖 → get 🪟+🚪+🧱[window + door + wall] (unclean)
 
 # In[30]:
 
