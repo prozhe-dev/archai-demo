@@ -8,11 +8,9 @@ Pillow==10.4.0
 matplotlib==3.9.2
 scikit-image==0.25.2
 imageio==2.37.0
-torch==2.7.0           # CPU wheel available for py312
-torchvision==0.22.0
 shapely==2.1.1
 networkx==3.4.2
 gdown==5.2.0
 svgpathtools==1.7.1
 svgwrite==1.4.3
-lmdb==1.5.1    
+lmdb==1.5.1
