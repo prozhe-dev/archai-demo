@@ -79,7 +79,7 @@ import io
 
 # Define a dummy display function for non-Jupyter environments
 try:
-    from IPython.display import display
+from IPython.display import display
 except ImportError:
     def display(*args, **kwargs):
         pass  # Do nothing in non-Jupyter environments
