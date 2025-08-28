@@ -1508,10 +1508,15 @@ sys.path.append("..") # Adds higher directory to python modules path.
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
-import torch
-import torch.nn.functional as F
+try:
+    import torch
+    import torch.nn.functional as F
+    from torch.utils.data import DataLoader
+    TORCH_OK = True
+except Exception:
+    TORCH_OK = False
 import cv2 
-from torch.utils.data import DataLoader
+
 
 from model import get_model
 from utils.loaders import FloorplanSVG, DictToTensor, Compose, RotateNTurns
