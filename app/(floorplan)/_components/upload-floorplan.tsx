@@ -42,6 +42,7 @@ export default function UploadFloorplan() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: process.env.FLOORPLAN_DETECTOR_API_KEY!,
         },
         body: JSON.stringify({ image: formData.image }),
       });

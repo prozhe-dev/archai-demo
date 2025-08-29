@@ -7,6 +7,7 @@ import { CAMERA_FOV } from "@/utils/consts";
 import FloorPlanImage from "./floorplan-image";
 import { Group } from "three";
 import { useFrame } from "@react-three/fiber";
+import * as THREE from "three";
 
 export default function Minimap() {
   const { debug, camera, bounds, scene } = useFloorplan();
@@ -17,7 +18,7 @@ export default function Minimap() {
       playerIndicatorRef.current.position.x = scene.camera.position.x;
       playerIndicatorRef.current.position.z = scene.camera.position.z;
       playerIndicatorRef.current.rotation.z = scene.camera.rotation.y;
-    }
+      }
   });
 
   return (

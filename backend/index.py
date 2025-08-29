@@ -40,6 +40,12 @@ def run_floorplan_detector(image_path, tmp_dir):
 @app.route('/vertx', methods=['POST'])
 def execute_floorplan_detector():
     image_base64 = request.json.get('image')
+    token = request.headers.get('Authorization')
+    if token != os.getenv('FLOORPLAN_DETECTOR_API_KEY'):
+        return jsonify({
+            "status": "error",
+            "message": "Invalid API key"
+        }), 401
 
     if not image_base64:
         return jsonify({
