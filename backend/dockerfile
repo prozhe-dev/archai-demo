@@ -1,52 +1,56 @@
 # ---- builder ----
-    FROM python:3.12-slim AS builder
-    WORKDIR /app
-    
-    # Install system dependencies needed for building lmdb and other packages
-    RUN apt-get update && apt-get install -y \
-        build-essential \
-        patch \
-        && rm -rf /var/lib/apt/lists/*
-    
-    ENV PIP_NO_CACHE_DIR=1 PIP_DISABLE_PIP_VERSION_CHECK=1
-    
-    COPY requirements.txt .
-    
-    # Create a lightweight venv (symlinks by default; no --copies)
-    RUN python -m venv /opt/venv \
-     && . /opt/venv/bin/activate \
-     && pip install --upgrade pip
-    
-    # Install CPU-only PyTorch wheels (SMALLER; no CUDA libs)
-    RUN . /opt/venv/bin/activate \
-     && pip install --index-url https://download.pytorch.org/whl/cpu \
-          torch==2.7.0 torchvision==0.22.0
-    
-    # Now install the rest
-    RUN . /opt/venv/bin/activate \
-     && pip install -r requirements.txt
-    
-    # Pre-download the model during build
-    RUN pip install gdown
-    RUN gdown https://drive.google.com/uc?id=1gRB7ez1e4H7a9Y09lLqRuna0luZO5VRK -O model_best_val_loss_var.pkl
-    
-    # ---- runner ----
-    FROM python:3.12-slim AS runner
-    WORKDIR /app
-    
-    ENV PATH="/opt/venv/bin:$PATH" \
-        PYTHONDONTWRITEBYTECODE=1 \
-        PYTHONUNBUFFERED=1 \
-        PIP_NO_CACHE_DIR=1
-    
-    # bring the minimal venv only (no compilers, no caches)
-    COPY --from=builder /opt/venv /opt/venv
-    
-    # copy ONLY what you need at runtime
-    COPY index.py ./index.py
-    COPY flooplan_detector.py ./flooplan_detector.py
-    COPY model/ ./model/
-    COPY utils/ ./utils/
-    
-    EXPOSE 5050
-    CMD ["python", "index.py"]
+FROM python:3.12-slim AS builder
+WORKDIR /app
+
+# Install system dependencies needed for building lmdb and other packages
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    patch \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV PIP_NO_CACHE_DIR=1 PIP_DISABLE_PIP_VERSION_CHECK=1
+
+COPY requirements.txt .
+
+# Create a lightweight venv (symlinks by default; no --copies)
+RUN python -m venv /opt/venv \
+ && . /opt/venv/bin/activate \
+ && pip install --upgrade pip
+
+# Install CPU-only PyTorch wheels (SMALLER; no CUDA libs)
+RUN . /opt/venv/bin/activate \
+ && pip install --index-url https://download.pytorch.org/whl/cpu \
+      torch==2.7.0 torchvision==0.22.0
+
+# Now install the rest
+RUN . /opt/venv/bin/activate \
+ && pip install -r requirements.txt
+
+# Pre-download the model during build
+RUN . /opt/venv/bin/activate \
+ && pip install gdown \
+ && gdown https://drive.google.com/uc?id=1gRB7ez1e4H7a9Y09lLqRuna0luZO5VRK -O model_best_val_loss_var.pkl
+
+# ---- runner ----
+FROM python:3.12-slim AS runner
+WORKDIR /app
+
+ENV PATH="/opt/venv/bin:$PATH" \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1
+
+# bring the minimal venv only (no compilers, no caches)
+COPY --from=builder /opt/venv /opt/venv
+
+# copy ONLY what you need at runtime
+COPY index.py ./index.py
+COPY flooplan_detector.py ./flooplan_detector.py
+COPY model/ ./model/
+COPY utils/ ./utils/
+
+# Copy the pre-downloaded model
+COPY --from=builder /app/model_best_val_loss_var.pkl ./model_best_val_loss_var.pkl
+
+EXPOSE 5050
+CMD ["python", "index.py"]
