@@ -5,6 +5,7 @@
 # Now we need an example image to work with.
 # 
 # What API will input to.
+import ast
 
 # In[1]:
 
@@ -1624,7 +1625,8 @@ img = np.moveaxis(img, -1, 0)
 # ALL THIS IS BECAUSE pytorch expects the image in this format: (channels(3 RGB), height, width)
 
 # Convert to pytorch, enable cuda (CPU only)
-img = torch.tensor([img.astype(np.float32)]) # CPU only
+# img = torch.tensor([img.astype(np.float32)]) # CPU only
+img = torch.tensor(np.array([img.astype(np.float32)])) # CPU only
 # This line does THREE important things:
 # 1. Before: Could be uint8 (0-255) or float64
 # img.astype(np.float32)  # Convert to 32-bit float (bcz Why? PyTorch prefers float32 for: Memory efficiency + GPU compatibility + Numerical stability)
@@ -3789,296 +3791,296 @@ with open(os.path.join(tmp_dir, "floorplan_data.json"), "w") as f:
 # In[57]:
 
 
-# ▓▓▓  Wall-only inference with the pre-trained Furukawa checkpoint  ▓▓▓
-# Works on CPU, Apple-M-series (mps) or CUDA automatically.
+# # ▓▓▓  Wall-only inference with the pre-trained Furukawa checkpoint  ▓▓▓
+# # Works on CPU, Apple-M-series (mps) or CUDA automatically.
 
-import torch
-from model import get_model   # make sure your repo is on PYTHONPATH
+# import torch
+# from model import get_model   # make sure your repo is on PYTHONPATH
 
-# ───────────────────────────────────────────────────────────
-# 0.  pick a device
-# ───────────────────────────────────────────────────────────
-if torch.cuda.is_available():
-    device = torch.device("cuda")
-elif torch.backends.mps.is_available():
-    device = torch.device("mps")   # Apple Silicon (M1/M2)
-else:
-    device = torch.device("cpu")
+# # ───────────────────────────────────────────────────────────
+# # 0.  pick a device
+# # ───────────────────────────────────────────────────────────
+# if torch.cuda.is_available():
+#     device = torch.device("cuda")
+# elif torch.backends.mps.is_available():
+#     device = torch.device("mps")   # Apple Silicon (M1/M2)
+# else:
+#     device = torch.device("cpu")
 
+# # # print("Running on:", device)
+
+# # ───────────────────────────────────────────────────────────
+# # 1.  Build the network exactly like in the checkpoint
+# # ───────────────────────────────────────────────────────────
+# N_CLASSES         = 44
+# ROOM_OFFSET       = 21      # first 21 are junctions
+# WALL_ROOM_INDEX   = 2       # index 2 inside the 12-room block
+# WALL_CHANNEL      = ROOM_OFFSET + WALL_ROOM_INDEX # 21 + 2
+
+# net = get_model('hg_furukawa_original', 51)
+# net.conv4_   = torch.nn.Conv2d(256, N_CLASSES, 1, bias=True)
+# net.upsample = torch.nn.ConvTranspose2d(N_CLASSES, N_CLASSES, 4, 4)
+
+# ckpt = torch.load(model_path, map_location='cpu')
+# net.load_state_dict(ckpt['model_state'])
+# net.to(device).eval()
+
+# # ───────────────────────────────────────────────────────────
+# # 2.  Utility: run one RGB numpy image → wall prob / mask
+# # ───────────────────────────────────────────────────────────
+# @torch.no_grad()
+# def wall_mask_from_numpy(rgb_np, thresh=0.35):
+#     """
+#     rgb_np : H×W×3 uint8 (0–255)  in RGB order.
+#     returns : (prob, mask)        both H×W   float32 / bool
+#     """
+#     rgb = 2*(rgb_np/255.0) - 1           # [-1,1] like training
+#     t   = torch.from_numpy(rgb).permute(2,0,1)[None].float().to(device)
+
+#     logits = net(t)                      # B×44×H×W
+#     room_logits = logits[:, ROOM_OFFSET:ROOM_OFFSET+12]
+#     wall_prob   = torch.softmax(room_logits, 1)[:, WALL_ROOM_INDEX]  # B×H×W
+#     wall_prob   = wall_prob[0].cpu()      # remove batch, back to CPU
+#     wall_mask   = (wall_prob > thresh)
+
+#     return wall_prob.numpy(), wall_mask.numpy()
+
+# import cv2, matplotlib.pyplot as plt, numpy as np
+# from PIL import Image
+
+# # Utility: pad to multiple of 4 for safe inference
+# def pad_to_multiple_of_4(img):
+#     h, w = img.shape[:2]
+#     pad_h = (4 - h % 4) % 4
+#     pad_w = (4 - w % 4) % 4
+#     img_padded = cv2.copyMakeBorder(img, 0, pad_h, 0, pad_w,
+#                                     borderType=cv2.BORDER_REFLECT)
+#     return img_padded, pad_h, pad_w
+
+# # ───────────────────────
+# # Load and enhance image
+# # ───────────────────────
+# # img_path = "Images/example8.png"
+# img = cv2.imread(img_path)
+# gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+# # display(Image.fromarray(gray))
+# img = cv2.detailEnhance(img, sigma_s=100, sigma_r=10)
+# # display(Image.fromarray(img))
+
+# # Convert to RGB
+# rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+# # Pad to avoid resolution loss from network stride
+# rgb_padded, pad_h, pad_w = pad_to_multiple_of_4(rgb)
+
+# # Inference
+# prob_padded, mask_padded = wall_mask_from_numpy(rgb_padded, thresh=0.8)
+
+# # Crop back to original size
+# if pad_h > 0:
+#     prob_padded = prob_padded[:-pad_h, :]
+#     mask_padded = mask_padded[:-pad_h, :]
+# if pad_w > 0:
+#     prob_padded = prob_padded[:, :-pad_w]
+#     mask_padded = mask_padded[:, :-pad_w]
+
+# prob, mask = prob_padded, mask_padded
+
+# # Visualize
+# # plt.figure(figsize=(12,5))
+# # plt.subplot(1,2,1); plt.title("wall probability"); plt.axis('off')
+# # plt.imshow(prob, cmap='hot'); plt.colorbar(fraction=0.046)
+# # plt.subplot(1,2,2); plt.title("binary wall mask"); plt.axis('off')
+# # plt.imshow(mask, cmap='gray')
+# # # display(Image.fromarray((mask * 255).astype(np.uint8)))
+# # display(Image.fromarray(mask))
+# # plt.tight_layout(); # plt.show()  # Commented out for non-interactive execution
+
+# # =================================================
+
+# # print("mask", mask)
+
+
+
+
+
+# # In[58]:
+
+
+# def mask_to_image_cv2(mask, output_path='mask_image.png'):
+#     # Ensure mask is a boolean NumPy array
+#     if not isinstance(mask, np.ndarray) or mask.dtype != bool:
+#         raise ValueError("Mask must be a boolean NumPy array")
+
+#     # Convert boolean mask to uint8 (0 for False, 255 for True)
+#     img = (mask.astype(np.uint8) * 255)
+
+#     # Convert to 3-channel RGB (replicate grayscale across R, G, B)
+#     img_3ch = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
+
+#     return img_3ch
+
+
+# mask_img = mask_to_image_cv2(mask)
+
+# gray = cv2.cvtColor(mask_img, cv2.COLOR_BGR2GRAY)
+
+
+
+# contours, _ = cv2.findContours(gray, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+# largest_contour = max(contours, key=cv2.contourArea)
+# contour = largest_contour
+
+
+# epsilon = epsilon_mult * cv2.arcLength(contour, True)
+# approx = cv2.approxPolyDP(contour, epsilon, True)
+# contour = approx
+# vis_image = np.zeros_like(mask_img)
+# contour = straighten_rectilinear(contour)
+# contour = straighten_rectilinear(contour)
+
+# cv2.drawContours(vis_image, [contour], -1, (255, 255, 255), 2)
+# # display(Image.fromarray(vis_image))
+
+
+
+
+# def contour_to_list(contour):
+#     """
+#     Convert a contour of shape (n, 1, 2) to a list of [x, y] points.
+    
+#     Parameters:
+#     - contour: NumPy array of shape (n, 1, 2) or similar
+    
+#     Returns:
+#     - List of [x, y] coordinates, e.g., [[a, b], [c, d], ...]
+#     """
+#     # Ensure contour is a NumPy array
+#     if not isinstance(contour, np.ndarray):
+#         contour = np.array(contour)
+    
+#     # Check shape and reshape if necessary
+#     if len(contour.shape) == 3 and contour.shape[1] == 1:
+#         # Reshape from (n, 1, 2) to (n, 2)
+#         contour = contour.reshape(-1, 2)
+    
+#     # Convert to list of [x, y] pairs
+#     return contour.tolist()
+
+# # Convert the contour
+# outter_boundaries = contour_to_list(contour)
+
+# for boundary in outter_boundaries:
+#     boundary[0] = (boundary[0] / 100)
+#     boundary[1] = (boundary[1] / 100)
+
+# # print("outter_boundaries", outter_boundaries)
+
+
+# # ### Test Cubi-walls vs cv2-walls
+
+# # In[59]:
+
+
+# import numpy as np
+# from PIL import Image
+
+
+# # Convert outline to filled polygon
+# contours, _ = cv2.findContours(wall_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+# filled_wall_img = np.zeros_like(wall_img)
+# cv2.drawContours(filled_wall_img, contours, -1, 255, thickness=cv2.FILLED)
+
+# # print("filled_wall_img", filled_wall_img.shape)
+# # # display(Image.fromarray(filled_wall_img))
+
+# # print("mask", mask.shape)
+# # # display(Image.fromarray(mask))
+
+# # print("wall_img", wall_img.shape)
+# # print("img", wall_img)
+
+# # Show intersection overlay
+# # Create a 3-channel RGB image for visualization
+# overlay = np.zeros((mask.shape[0], mask.shape[1], 3), dtype=np.uint8)
+
+# # Red for prediction only
+# overlay[(mask > 0) & (filled_wall_img == 0)] = [255, 0, 0]
+# # Blue for ground truth only
+# overlay[(filled_wall_img > 0) & (mask == 0)] = [0, 0, 255]
+# # Green for intersection
+# overlay[(mask > 0) & (filled_wall_img > 0)] = [0, 255, 0]
+
+# # display(Image.fromarray(overlay))
+
+
+# # ## Seperated Cubi - Windows
+
+# # In[60]:
+
+
+# # ▓▓▓  Window-only inference with the pre-trained Furukawa checkpoint  ▓▓▓
+# # Works on CPU, Apple-silicon (mps) or CUDA automatically.
+
+# import torch
+# from model import get_model                      # your repo factory
+
+# # ─── 0. pick device ──────────────────────────────────────────────────
+# if torch.cuda.is_available():
+#     device = torch.device("cuda")
+# elif torch.backends.mps.is_available():
+#     device = torch.device("mps")                 # Apple M-series
+# else:
+#     device = torch.device("cpu")
 # print("Running on:", device)
 
-# ───────────────────────────────────────────────────────────
-# 1.  Build the network exactly like in the checkpoint
-# ───────────────────────────────────────────────────────────
-N_CLASSES         = 44
-ROOM_OFFSET       = 21      # first 21 are junctions
-WALL_ROOM_INDEX   = 2       # index 2 inside the 12-room block
-WALL_CHANNEL      = ROOM_OFFSET + WALL_ROOM_INDEX # 21 + 2
-
-net = get_model('hg_furukawa_original', 51)
-net.conv4_   = torch.nn.Conv2d(256, N_CLASSES, 1, bias=True)
-net.upsample = torch.nn.ConvTranspose2d(N_CLASSES, N_CLASSES, 4, 4)
-
-ckpt = torch.load(model_path, map_location='cpu')
-net.load_state_dict(ckpt['model_state'])
-net.to(device).eval()
-
-# ───────────────────────────────────────────────────────────
-# 2.  Utility: run one RGB numpy image → wall prob / mask
-# ───────────────────────────────────────────────────────────
-@torch.no_grad()
-def wall_mask_from_numpy(rgb_np, thresh=0.35):
-    """
-    rgb_np : H×W×3 uint8 (0–255)  in RGB order.
-    returns : (prob, mask)        both H×W   float32 / bool
-    """
-    rgb = 2*(rgb_np/255.0) - 1           # [-1,1] like training
-    t   = torch.from_numpy(rgb).permute(2,0,1)[None].float().to(device)
-
-    logits = net(t)                      # B×44×H×W
-    room_logits = logits[:, ROOM_OFFSET:ROOM_OFFSET+12]
-    wall_prob   = torch.softmax(room_logits, 1)[:, WALL_ROOM_INDEX]  # B×H×W
-    wall_prob   = wall_prob[0].cpu()      # remove batch, back to CPU
-    wall_mask   = (wall_prob > thresh)
-
-    return wall_prob.numpy(), wall_mask.numpy()
-
-import cv2, matplotlib.pyplot as plt, numpy as np
-from PIL import Image
-
-# Utility: pad to multiple of 4 for safe inference
-def pad_to_multiple_of_4(img):
-    h, w = img.shape[:2]
-    pad_h = (4 - h % 4) % 4
-    pad_w = (4 - w % 4) % 4
-    img_padded = cv2.copyMakeBorder(img, 0, pad_h, 0, pad_w,
-                                    borderType=cv2.BORDER_REFLECT)
-    return img_padded, pad_h, pad_w
-
-# ───────────────────────
-# Load and enhance image
-# ───────────────────────
-# img_path = "Images/example8.png"
-img = cv2.imread(img_path)
-gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-# display(Image.fromarray(gray))
-img = cv2.detailEnhance(img, sigma_s=100, sigma_r=10)
-# display(Image.fromarray(img))
-
-# Convert to RGB
-rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-
-# Pad to avoid resolution loss from network stride
-rgb_padded, pad_h, pad_w = pad_to_multiple_of_4(rgb)
-
-# Inference
-prob_padded, mask_padded = wall_mask_from_numpy(rgb_padded, thresh=0.8)
-
-# Crop back to original size
-if pad_h > 0:
-    prob_padded = prob_padded[:-pad_h, :]
-    mask_padded = mask_padded[:-pad_h, :]
-if pad_w > 0:
-    prob_padded = prob_padded[:, :-pad_w]
-    mask_padded = mask_padded[:, :-pad_w]
-
-prob, mask = prob_padded, mask_padded
-
-# Visualize
-# plt.figure(figsize=(12,5))
-# plt.subplot(1,2,1); plt.title("wall probability"); plt.axis('off')
-# plt.imshow(prob, cmap='hot'); plt.colorbar(fraction=0.046)
-# plt.subplot(1,2,2); plt.title("binary wall mask"); plt.axis('off')
-# plt.imshow(mask, cmap='gray')
-# # display(Image.fromarray((mask * 255).astype(np.uint8)))
-# display(Image.fromarray(mask))
-# plt.tight_layout(); # plt.show()  # Commented out for non-interactive execution
-
-# =================================================
-
-# print("mask", mask)
-
-
-
-
-
-# In[58]:
-
-
-def mask_to_image_cv2(mask, output_path='mask_image.png'):
-    # Ensure mask is a boolean NumPy array
-    if not isinstance(mask, np.ndarray) or mask.dtype != bool:
-        raise ValueError("Mask must be a boolean NumPy array")
-
-    # Convert boolean mask to uint8 (0 for False, 255 for True)
-    img = (mask.astype(np.uint8) * 255)
-
-    # Convert to 3-channel RGB (replicate grayscale across R, G, B)
-    img_3ch = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
-
-    return img_3ch
-
-
-mask_img = mask_to_image_cv2(mask)
-
-gray = cv2.cvtColor(mask_img, cv2.COLOR_BGR2GRAY)
-
-
-
-contours, _ = cv2.findContours(gray, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-largest_contour = max(contours, key=cv2.contourArea)
-contour = largest_contour
-
-
-epsilon = epsilon_mult * cv2.arcLength(contour, True)
-approx = cv2.approxPolyDP(contour, epsilon, True)
-contour = approx
-vis_image = np.zeros_like(mask_img)
-contour = straighten_rectilinear(contour)
-contour = straighten_rectilinear(contour)
-
-cv2.drawContours(vis_image, [contour], -1, (255, 255, 255), 2)
-# display(Image.fromarray(vis_image))
-
-
-
-
-def contour_to_list(contour):
-    """
-    Convert a contour of shape (n, 1, 2) to a list of [x, y] points.
-    
-    Parameters:
-    - contour: NumPy array of shape (n, 1, 2) or similar
-    
-    Returns:
-    - List of [x, y] coordinates, e.g., [[a, b], [c, d], ...]
-    """
-    # Ensure contour is a NumPy array
-    if not isinstance(contour, np.ndarray):
-        contour = np.array(contour)
-    
-    # Check shape and reshape if necessary
-    if len(contour.shape) == 3 and contour.shape[1] == 1:
-        # Reshape from (n, 1, 2) to (n, 2)
-        contour = contour.reshape(-1, 2)
-    
-    # Convert to list of [x, y] pairs
-    return contour.tolist()
-
-# Convert the contour
-outter_boundaries = contour_to_list(contour)
-
-for boundary in outter_boundaries:
-    boundary[0] = (boundary[0] / 100)
-    boundary[1] = (boundary[1] / 100)
-
-# print("outter_boundaries", outter_boundaries)
-
-
-# ### Test Cubi-walls vs cv2-walls
-
-# In[59]:
-
-
-import numpy as np
-from PIL import Image
-
-
-# Convert outline to filled polygon
-contours, _ = cv2.findContours(wall_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-filled_wall_img = np.zeros_like(wall_img)
-cv2.drawContours(filled_wall_img, contours, -1, 255, thickness=cv2.FILLED)
-
-# print("filled_wall_img", filled_wall_img.shape)
-# # display(Image.fromarray(filled_wall_img))
-
-# print("mask", mask.shape)
-# # display(Image.fromarray(mask))
-
-# print("wall_img", wall_img.shape)
-# print("img", wall_img)
-
-# Show intersection overlay
-# Create a 3-channel RGB image for visualization
-overlay = np.zeros((mask.shape[0], mask.shape[1], 3), dtype=np.uint8)
-
-# Red for prediction only
-overlay[(mask > 0) & (filled_wall_img == 0)] = [255, 0, 0]
-# Blue for ground truth only
-overlay[(filled_wall_img > 0) & (mask == 0)] = [0, 0, 255]
-# Green for intersection
-overlay[(mask > 0) & (filled_wall_img > 0)] = [0, 255, 0]
-
-# display(Image.fromarray(overlay))
-
-
-# ## Seperated Cubi - Windows
-
-# In[60]:
-
-
-# ▓▓▓  Window-only inference with the pre-trained Furukawa checkpoint  ▓▓▓
-# Works on CPU, Apple-silicon (mps) or CUDA automatically.
-
-import torch
-from model import get_model                      # your repo factory
-
-# ─── 0. pick device ──────────────────────────────────────────────────
-if torch.cuda.is_available():
-    device = torch.device("cuda")
-elif torch.backends.mps.is_available():
-    device = torch.device("mps")                 # Apple M-series
-else:
-    device = torch.device("cpu")
-print("Running on:", device)
-
-# ─── 1. build network exactly like checkpoint ───────────────────────
-N_CLASSES         = 44
-ROOM_OFFSET       = 21                              # 0-20 junctions
-ICON_OFFSET       = ROOM_OFFSET + 12                # 33-43  icons
-WINDOW_ICON_INDEX = 1                               # ["NoIcon", *"Window"*, …]
-WINDOW_CHANNEL    = ICON_OFFSET + WINDOW_ICON_INDEX # 33 + 1 = 34
-
-net = get_model('hg_furukawa_original', 51)
-net.conv4_   = torch.nn.Conv2d(256, N_CLASSES, 1, bias=True)
-net.upsample = torch.nn.ConvTranspose2d(N_CLASSES, N_CLASSES, 4, 4)
-
-ckpt = torch.load(model_path, map_location='cpu')
-net.load_state_dict(ckpt['model_state'])
-net.to(device).eval()
-
-# ─── 2. helper : RGB numpy  →  window prob / mask ───────────────────
-@torch.no_grad()
-def window_mask_from_numpy(rgb_np, thresh=0.50):
-    """
-    rgb_np : H×W×3 uint8 in RGB.
-    returns : (prob, mask)   both H×W  float32 / bool
-    """
-    rgb   = 2*(rgb_np/255.0) - 1                      # training normalisation
-    t     = torch.from_numpy(rgb).permute(2,0,1)[None].float().to(device)
-
-    logits      = net(t)                              # B×44×H×W
-    icon_logits = logits[:, ICON_OFFSET:ICON_OFFSET+11]  # 11 icon channels
-    win_prob    = torch.softmax(icon_logits, 1)[:, WINDOW_ICON_INDEX]  # B×H×W
-    win_prob    = win_prob[0].cpu()                   # to CPU, drop batch
-    win_mask    = (win_prob > thresh)
-    return win_prob.numpy(), win_mask.numpy()
-
-# ─── 3. demo ────────────────────────────────────────────────────────
-import cv2, matplotlib.pyplot as plt, numpy as np
-from PIL import Image                                   # for display()
-
-# img_path = "Images/atlantic-floor-plan.png"              # ← your raster
-# bgr      = cv2.imread(img_path)
-img = cv2.imread(img_path)
-gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-# display(Image.fromarray(gray))
-img = cv2.detailEnhance(img, sigma_s=100, sigma_r=10)
-# display(Image.fromarray(img))
-
-rgb      = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-
-prob, win_mask = window_mask_from_numpy(rgb, thresh=0.05)    # tweak threshold!
+# # ─── 1. build network exactly like checkpoint ───────────────────────
+# N_CLASSES         = 44
+# ROOM_OFFSET       = 21                              # 0-20 junctions
+# ICON_OFFSET       = ROOM_OFFSET + 12                # 33-43  icons
+# WINDOW_ICON_INDEX = 1                               # ["NoIcon", *"Window"*, …]
+# WINDOW_CHANNEL    = ICON_OFFSET + WINDOW_ICON_INDEX # 33 + 1 = 34
+
+# net = get_model('hg_furukawa_original', 51)
+# net.conv4_   = torch.nn.Conv2d(256, N_CLASSES, 1, bias=True)
+# net.upsample = torch.nn.ConvTranspose2d(N_CLASSES, N_CLASSES, 4, 4)
+
+# ckpt = torch.load(model_path, map_location='cpu')
+# net.load_state_dict(ckpt['model_state'])
+# net.to(device).eval()
+
+# # ─── 2. helper : RGB numpy  →  window prob / mask ───────────────────
+# @torch.no_grad()
+# def window_mask_from_numpy(rgb_np, thresh=0.50):
+#     """
+#     rgb_np : H×W×3 uint8 in RGB.
+#     returns : (prob, mask)   both H×W  float32 / bool
+#     """
+#     rgb   = 2*(rgb_np/255.0) - 1                      # training normalisation
+#     t     = torch.from_numpy(rgb).permute(2,0,1)[None].float().to(device)
+
+#     logits      = net(t)                              # B×44×H×W
+#     icon_logits = logits[:, ICON_OFFSET:ICON_OFFSET+11]  # 11 icon channels
+#     win_prob    = torch.softmax(icon_logits, 1)[:, WINDOW_ICON_INDEX]  # B×H×W
+#     win_prob    = win_prob[0].cpu()                   # to CPU, drop batch
+#     win_mask    = (win_prob > thresh)
+#     return win_prob.numpy(), win_mask.numpy()
+
+# # ─── 3. demo ────────────────────────────────────────────────────────
+# import cv2, matplotlib.pyplot as plt, numpy as np
+# from PIL import Image                                   # for display()
+
+# # img_path = "Images/atlantic-floor-plan.png"              # ← your raster
+# # bgr      = cv2.imread(img_path)
+# img = cv2.imread(img_path)
+# gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+# # display(Image.fromarray(gray))
+# img = cv2.detailEnhance(img, sigma_s=100, sigma_r=10)
+# # display(Image.fromarray(img))
+
+# rgb      = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+# prob, win_mask = window_mask_from_numpy(rgb, thresh=0.05)    # tweak threshold!
 
 # plt.figure(figsize=(12,5))
 # plt.subplot(1,2,1); plt.title("window probability"); plt.axis('off')
@@ -4093,69 +4095,69 @@ prob, win_mask = window_mask_from_numpy(rgb, thresh=0.05)    # tweak threshold!
 # In[61]:
 
 
-# ▓▓▓  Window-only inference with the pre-trained Furukawa checkpoint  ▓▓▓
-# Works on CPU, Apple-silicon (mps) or CUDA automatically.
+# # ▓▓▓  Window-only inference with the pre-trained Furukawa checkpoint  ▓▓▓
+# # Works on CPU, Apple-silicon (mps) or CUDA automatically.
 
-import torch
-from model import get_model                      # your repo factory
+# import torch
+# from model import get_model                      # your repo factory
 
-# ─── 0. pick device ──────────────────────────────────────────────────
-if torch.cuda.is_available():
-    device = torch.device("cuda")
-elif torch.backends.mps.is_available():
-    device = torch.device("mps")                 # Apple M-series
-else:
-    device = torch.device("cpu")
-print("Running on:", device)
+# # ─── 0. pick device ──────────────────────────────────────────────────
+# if torch.cuda.is_available():
+#     device = torch.device("cuda")
+# elif torch.backends.mps.is_available():
+#     device = torch.device("mps")                 # Apple M-series
+# else:
+#     device = torch.device("cpu")
+# print("Running on:", device)
 
-# ─── 1. build network exactly like checkpoint ───────────────────────
-N_CLASSES         = 44
-ROOM_OFFSET       = 21                              # 0-20 junctions
-ICON_OFFSET       = ROOM_OFFSET + 12                # 33-43  icons
-DOOR_ICON_INDEX = 2                               # ["NoIcon", *"Window"*, …]
-DOOR_CHANNEL    = ICON_OFFSET + DOOR_ICON_INDEX # 33 + 1 = 34
+# # ─── 1. build network exactly like checkpoint ───────────────────────
+# N_CLASSES         = 44
+# ROOM_OFFSET       = 21                              # 0-20 junctions
+# ICON_OFFSET       = ROOM_OFFSET + 12                # 33-43  icons
+# DOOR_ICON_INDEX = 2                               # ["NoIcon", *"Window"*, …]
+# DOOR_CHANNEL    = ICON_OFFSET + DOOR_ICON_INDEX # 33 + 1 = 34
 
-net = get_model('hg_furukawa_original', 51)
-net.conv4_   = torch.nn.Conv2d(256, N_CLASSES, 1, bias=True)
-net.upsample = torch.nn.ConvTranspose2d(N_CLASSES, N_CLASSES, 4, 4)
+# net = get_model('hg_furukawa_original', 51)
+# net.conv4_   = torch.nn.Conv2d(256, N_CLASSES, 1, bias=True)
+# net.upsample = torch.nn.ConvTranspose2d(N_CLASSES, N_CLASSES, 4, 4)
 
-ckpt = torch.load(model_path, map_location='cpu')
-net.load_state_dict(ckpt['model_state'])
-net.to(device).eval()
+# ckpt = torch.load(model_path, map_location='cpu')
+# net.load_state_dict(ckpt['model_state'])
+# net.to(device).eval()
 
-# ─── 2. helper : RGB numpy  →  window prob / mask ───────────────────
-@torch.no_grad()
-def window_mask_from_numpy(rgb_np, thresh=0.50):
-    """
-    rgb_np : H×W×3 uint8 in RGB.
-    returns : (prob, mask)   both H×W  float32 / bool
-    """
-    rgb   = 2*(rgb_np/255.0) - 1                      # training normalisation
-    t     = torch.from_numpy(rgb).permute(2,0,1)[None].float().to(device)
+# # ─── 2. helper : RGB numpy  →  window prob / mask ───────────────────
+# @torch.no_grad()
+# def window_mask_from_numpy(rgb_np, thresh=0.50):
+#     """
+#     rgb_np : H×W×3 uint8 in RGB.
+#     returns : (prob, mask)   both H×W  float32 / bool
+#     """
+#     rgb   = 2*(rgb_np/255.0) - 1                      # training normalisation
+#     t     = torch.from_numpy(rgb).permute(2,0,1)[None].float().to(device)
 
-    logits      = net(t)                              # B×44×H×W
-    icon_logits = logits[:, ICON_OFFSET:ICON_OFFSET+11]  # 11 icon channels
-    win_prob    = torch.softmax(icon_logits, 1)[:, DOOR_ICON_INDEX]  # B×H×W
-    win_prob    = win_prob[0].cpu()                   # to CPU, drop batch
-    win_mask    = (win_prob > thresh)
-    return win_prob.numpy(), win_mask.numpy()
+#     logits      = net(t)                              # B×44×H×W
+#     icon_logits = logits[:, ICON_OFFSET:ICON_OFFSET+11]  # 11 icon channels
+#     win_prob    = torch.softmax(icon_logits, 1)[:, DOOR_ICON_INDEX]  # B×H×W
+#     win_prob    = win_prob[0].cpu()                   # to CPU, drop batch
+#     win_mask    = (win_prob > thresh)
+#     return win_prob.numpy(), win_mask.numpy()
 
-# ─── 3. demo ────────────────────────────────────────────────────────
-import cv2, matplotlib.pyplot as plt, numpy as np
-from PIL import Image                                   # for display()
+# # ─── 3. demo ────────────────────────────────────────────────────────
+# import cv2, matplotlib.pyplot as plt, numpy as np
+# from PIL import Image                                   # for display()
 
-# img_path = "Images/atlantic-floor-plan.png"              # ← your raster
-# bgr      = cv2.imread(img_path)
-img = cv2.imread(img_path)
-gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-# display(Image.fromarray(gray))
-img = cv2.detailEnhance(img, sigma_s=100, sigma_r=100)
-# display(Image.fromarray(img))
+# # img_path = "Images/atlantic-floor-plan.png"              # ← your raster
+# # bgr      = cv2.imread(img_path)
+# img = cv2.imread(img_path)
+# gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+# # display(Image.fromarray(gray))
+# img = cv2.detailEnhance(img, sigma_s=100, sigma_r=100)
+# # display(Image.fromarray(img))
 
-rgb      = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+# rgb      = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
 
-prob, door_mask = window_mask_from_numpy(rgb, thresh=0.25)    # tweak threshold!
+# prob, door_mask = window_mask_from_numpy(rgb, thresh=0.25)    # tweak threshold!
 
 # plt.figure(figsize=(12,5))
 # plt.subplot(1,2,1); plt.title("window probability"); plt.axis('off')
