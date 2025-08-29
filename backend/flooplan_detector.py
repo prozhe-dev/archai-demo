@@ -11,7 +11,8 @@
 
 import os
 
-current_dir = os.getcwd()
+# Use the directory of this file for stable, absolute paths
+current_dir = os.path.dirname(os.path.abspath(__file__))
 tmp_dir = os.path.join(current_dir, "tmp")
 
 if not os.path.exists(tmp_dir):
@@ -152,11 +153,12 @@ img = cv2.imread(main_img_path)
 
 import os
 
-model_path = 'model_best_val_loss_var.pkl'
+# Absolute path to the model in the backend directory
+model_path = os.path.join(os.path.dirname(__file__), 'model_best_val_loss_var.pkl')
 if not os.path.exists(model_path):
     # Download only if file does not exist
     import subprocess
-    subprocess.run(["gdown", "https://drive.google.com/uc?id=1gRB7ez1e4H7a9Y09lLqRuna0luZO5VRK"])
+    subprocess.run(["gdown", "https://drive.google.com/uc?id=1gRB7ez1e4H7a9Y09lLqRuna0luZO5VRK", "-O", model_path])
 else:
     print(f"{model_path} already exists, skipping download.")
 # model_path = os.path.join(os.path.dirname(__file__), "model_best_val_loss_var.pkl")
@@ -1547,7 +1549,7 @@ split = [21, 12, 11]  #  split this 44 classes into 3 parts: (21 junctions (wher
 model.conv4_ = torch.nn.Conv2d(256, n_classes, bias=True, kernel_size=1) # added convolution layer to the model to make the model's 256 channels to 44 channels that I want to predict
 model.upsample = torch.nn.ConvTranspose2d(n_classes, n_classes, kernel_size=4, stride=4) # added upsampling layer all this to make the results x4 bigger to fit the image original size
 # 3. THEN load pre-trained weights file (from Furukawa's model). run by CPU only
-checkpoint = torch.load('model_best_val_loss_var.pkl', map_location=torch.device('cpu')) # CPU only
+checkpoint = torch.load(model_path, map_location=torch.device('cpu')) # CPU only
 
 
 # Input Image
@@ -3817,7 +3819,7 @@ net = get_model('hg_furukawa_original', 51)
 net.conv4_   = torch.nn.Conv2d(256, N_CLASSES, 1, bias=True)
 net.upsample = torch.nn.ConvTranspose2d(N_CLASSES, N_CLASSES, 4, 4)
 
-ckpt = torch.load('model_best_val_loss_var.pkl', map_location='cpu')
+ckpt = torch.load(model_path, map_location='cpu')
 net.load_state_dict(ckpt['model_state'])
 net.to(device).eval()
 
@@ -4041,7 +4043,7 @@ net = get_model('hg_furukawa_original', 51)
 net.conv4_   = torch.nn.Conv2d(256, N_CLASSES, 1, bias=True)
 net.upsample = torch.nn.ConvTranspose2d(N_CLASSES, N_CLASSES, 4, 4)
 
-ckpt = torch.load('model_best_val_loss_var.pkl', map_location='cpu')
+ckpt = torch.load(model_path, map_location='cpu')
 net.load_state_dict(ckpt['model_state'])
 net.to(device).eval()
 
@@ -4117,7 +4119,7 @@ net = get_model('hg_furukawa_original', 51)
 net.conv4_   = torch.nn.Conv2d(256, N_CLASSES, 1, bias=True)
 net.upsample = torch.nn.ConvTranspose2d(N_CLASSES, N_CLASSES, 4, 4)
 
-ckpt = torch.load('model_best_val_loss_var.pkl', map_location='cpu')
+ckpt = torch.load(model_path, map_location='cpu')
 net.load_state_dict(ckpt['model_state'])
 net.to(device).eval()
 
@@ -4337,7 +4339,7 @@ def main_floorplan_processing(img_path, tmp_dir):
     # if not model_loaded:
     #     raise FileNotFoundError("Could not load model from any available path")
     # Load the model directly
-    checkpoint = torch.load('model_best_val_loss_var.pkl', map_location=torch.device('cpu'))
+    checkpoint = torch.load(model_path, map_location=torch.device('cpu'))
     model.load_state_dict(checkpoint['model_state'])
     model.eval()
     

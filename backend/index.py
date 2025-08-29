@@ -30,10 +30,10 @@ def run_floorplan_detector(image_path, tmp_dir):
         # Execute the module to load all functions
         spec.loader.exec_module(detector_module)
         
-        # Call the main processing function
-        result = detector_module.main_floorplan_processing(image_path, tmp_dir)
-        
-        return True, "Floorplan detector executed successfully"
+        # NOTE: The detector script performs the full pipeline at import time
+        # using the tmp/floorplan.png input. Avoid calling it again to prevent
+        # duplicate work and long runtimes.
+        return True, "Floorplan detector executed successfully (import-time run)"
     except Exception as e:
         return False, f"Failed to execute floorplan detector: {str(e)}"
 
