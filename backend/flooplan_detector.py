@@ -1590,6 +1590,16 @@ model.load_state_dict(checkpoint['model_state'])
 model.eval()
 # ------------------------------------------------------------
 
+# # After loading the model
+# model.eval()
+
+# Compile with TorchScript for faster inference
+try:
+    model = torch.jit.script(model)
+    print("Model compiled with TorchScript for faster inference")
+except Exception as e:
+    print(f"TorchScript compilation failed: {e}")
+
 
 
 
@@ -1679,7 +1689,7 @@ with torch.no_grad():  # Tell PyTorch we don't need gradients
     prediction = model(img)
     
     # Ensure correct size
-    prediction = F.interpolate(prediction, size=(height, width), mode='bilinear', align_corners=True)
+    # prediction = F.interpolate(prediction, size=(height, width), mode='bilinear', align_corners=True)
 
 # example for image size 400x600 and 44 classes:
  #  [!!!] the prediction tensor has shape [4, 44, 400, 600]   (4 rotations, 44 classes, 400 height, 600 width)
@@ -4269,9 +4279,9 @@ def main_floorplan_processing(img_path, tmp_dir):
     # Image preparation
     img = cv2.imread(img_path)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    img = 2 * (img / 255.0) - 1
-    img = np.moveaxis(img, -1, 0)
-    img = torch.tensor([img.astype(np.float32)])
+    img = (img.astype(np.float32) / 127.5) - 1.0  # Faster than 2 * (img / 255.0) - 1
+    img = img.transpose(2, 0, 1)  # Faster than np.moveaxis
+    img = torch.from_numpy(img).unsqueeze(0)  # Add batch dimension
     n_rooms = len(room_classes)
     n_icons = len(icon_classes)
     
