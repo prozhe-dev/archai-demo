@@ -110,6 +110,7 @@ export default function UploadFloorplan() {
                             <ImageIcon className="size-8" />
                             <p className="text-sm">{isDragActive ? "Drop your floorplan here" : "Drag & drop your floorplan here, or click to select"}</p>
                           </div>
+                          <p className="text-sm text-muted-foreground">The floorplan detection process may take a few minutes.</p>
                         </div>
                       )}
                     </Dropzone>
