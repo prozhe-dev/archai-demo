@@ -25,12 +25,12 @@ import { useLocalStorage } from "@uidotdev/usehooks";
 import { useLayer } from "@/hooks/use-layers";
 import { useFloorplan } from "@/hooks/use-floorplan";
 
-const STEPS = ["snapshot", "base-render", "staged-render"] as const;
+type Step = "snapshot" | "base-render" | "staged-render";
 
 export default function GenRender() {
   const { snapshotImage, snapshotDepthImage, snapshotEdgesImage, snapshotSegmentsImage, renderImage, setRenderImage, stagedImage, setStagedImage, resetImages, isGenRenderModalOpen, setGenRenderModalOpen } =
     useGenRender();
-  const [step, setStep] = useState<(typeof STEPS)[number]>("snapshot");
+  const [step, setStep] = useState<Step>("snapshot");
   const abortControllerRef = useRef<AbortController | null>(null);
   const [snapShotLayer, setSnapShotLayer] = useState<number>(0);
   const [savedImages, setSavedImages] = useLocalStorage<string[]>("saved-images", []);

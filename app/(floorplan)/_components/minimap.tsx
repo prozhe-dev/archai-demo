@@ -7,7 +7,6 @@ import { CAMERA_FOV } from "@/utils/consts";
 import FloorPlanImage from "./floorplan-image";
 import { Group } from "three";
 import { useFrame } from "@react-three/fiber";
-import * as THREE from "three";
 
 export default function Minimap() {
   const { debug, camera, bounds, scene } = useFloorplan();

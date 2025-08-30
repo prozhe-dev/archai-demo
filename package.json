@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev:next": "next dev --turbopack",
-    "dev:backend": "cd backend && docker build -t floorplan-detector . && docker run -p 5050:5050 floorplan-detector",
+    "dev:backend": "cd backend && docker build -t floorplan-detector . && docker run --env-file .env -p 5050:5050 floorplan-detector",
     "build:next": "next build",
     "start:next": "next start",
     "dev": "npm run dev:next & npm run dev:backend",

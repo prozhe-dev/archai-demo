@@ -1,19 +1,16 @@
 import { useFloorplan } from "@/hooks/use-floorplan";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo } from "react";
 import * as THREE from "three";
 import { Edges, useTexture } from "@react-three/drei";
-import { CuboidCollider, RigidBody, useRapier } from "@react-three/rapier";
-import { PLAYER_POS_Y, SEGMENT_COLORS } from "@/utils/consts";
-import { useHotkeys } from "react-hotkeys-hook";
-import { TriplanarMaterial } from "@/components/materials/triplanar-material";
+import { CuboidCollider, RigidBody } from "@react-three/rapier";
+import { SEGMENT_COLORS } from "@/utils/consts";
 import { DepthMaterial } from "@/components/materials/depth-material";
 
 export default function Floor() {
   const { data } = useFloorplan();
 
-  if (!data || data.floor.length === 0) return null;
-
   const geometry = useMemo(() => {
+    if (!data) return null;
     const shape = new THREE.Shape();
     if (data.floor.length > 0) {
       data.floor.forEach((vert) => {
@@ -31,6 +28,8 @@ export default function Floor() {
   texture.rotation = Math.PI / 2;
   texture.wrapS = THREE.RepeatWrapping;
   texture.wrapT = THREE.RepeatWrapping;
+
+  if (!data || data.floor.length === 0 || !geometry) return null;
 
   return (
     <>

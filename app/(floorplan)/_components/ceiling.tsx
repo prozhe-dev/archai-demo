@@ -9,9 +9,9 @@ import { DepthMaterial } from "@/components/materials/depth-material";
 
 export default function Ceiling() {
   const { data, camera } = useFloorplan();
-  if (!data || data.floor.length === 0) return null;
 
   const processedGeometry = useMemo(() => {
+    if (!data) return null;
     const shape = new THREE.Shape();
     if (data.floor.length > 0) {
       data.floor.forEach((vert) => {
@@ -21,12 +21,14 @@ export default function Ceiling() {
     }
     shape.closePath();
     return new THREE.ShapeGeometry(shape);
-  }, []);
+  }, [data]);
 
   const { animatedOpacity } = useSpring({
     animatedOpacity: camera.mode === "pov" && camera.state === "idle" ? 1 : 0,
     config: { tension: 300, friction: 20 },
   });
+
+  if (!data || data.floor.length === 0 || !processedGeometry) return null;
 
   return (
     <>

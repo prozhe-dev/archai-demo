@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import * as THREE from "three";
-import { Edges, Extrude } from "@react-three/drei";
+import { Edges } from "@react-three/drei";
 import { useFloorplan } from "@/hooks/use-floorplan";
 import { RapierRigidBody, RigidBody } from "@react-three/rapier";
 import { ThreeEvent, useFrame } from "@react-three/fiber";
@@ -11,11 +11,11 @@ import { DepthMaterial } from "@/components/materials/depth-material";
 
 export default function Doors() {
   const { data } = useFloorplan();
-  if (!data || data.doors.length === 0) return null;
+  
 
   const shapes = useMemo(
     () =>
-      data.doors.map((door) => {
+      data?.doors.map((door) => {
         const shape = new THREE.Shape();
 
         // Move to first vertex
@@ -34,7 +34,9 @@ export default function Doors() {
     [data],
   );
 
-  return shapes.map((shape) => <Door key={shape.uuid} shape={shape} />);
+  if (!data || data.doors.length === 0) return null;
+
+  return shapes?.map((shape) => <Door key={shape.uuid} shape={shape} />) || null;
 }
 
 function Door({ shape }: { shape: THREE.Shape }) {

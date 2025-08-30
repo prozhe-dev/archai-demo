@@ -1,14 +1,13 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import * as THREE from "three";
-import { useEffect, useMemo, useRef } from "react";
-import { RigidBody, RapierRigidBody, CapsuleCollider, CuboidCollider, CylinderCollider } from "@react-three/rapier";
+import { useEffect, useRef } from "react";
+import { RigidBody, RapierRigidBody, CapsuleCollider } from "@react-three/rapier";
 import { useFrame, useThree } from "@react-three/fiber";
 import { KeyboardControls, OrbitControls, useKeyboardControls } from "@react-three/drei";
 import { Triplet } from "@/types/global";
 import { useFloorplan } from "@/hooks/use-floorplan";
 import { useHotkeys } from "react-hotkeys-hook";
 import { easeInOut } from "@/utils";
-import { useSpring } from "@react-spring/three";
 import { useGenRender } from "@/hooks/use-gen-render";
 import { useLayer } from "@/hooks/use-layers";
 

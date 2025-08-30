@@ -75,6 +75,7 @@ export default function Scene() {
         <Minimap />
       </View>
 
+      {/* eslint-disable  @typescript-eslint/no-explicit-any */}
       <Canvas gl={{ antialias: true, powerPreference: "high-performance" }} shadows={true} className="absolute inset-0" eventSource={containerRef as any}>
         <Suspense fallback={null}>
           <View.Port />

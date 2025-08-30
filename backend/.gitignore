@@ -6,3 +6,5 @@ tmp/
 
 # Ignore the model checkpoint file for best validation loss variance
 model_best_val_loss_var.pkl
+
+.env

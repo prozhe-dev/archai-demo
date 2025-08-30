@@ -26,7 +26,7 @@ export default function UploadFloorplan() {
   });
 
   const {
-    formState: { isSubmitting, isValid, isLoading },
+    formState: { isSubmitting },
     handleSubmit,
     setError,
     watch,
@@ -34,29 +34,29 @@ export default function UploadFloorplan() {
 
   const image = watch("image");
 
-  async function onSubmit(formData: z.infer<typeof UploadSchema>) {
-    console.log({ formData });
-    try {
-      const url = await uploadBase64ImageToCloudinary({ base64Image: formData.image, folder: "steads/floorplans" });
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/vertx`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: process.env.FLOORPLAN_DETECTOR_API_KEY!,
-        },
-        body: JSON.stringify({ image: formData.image }),
-      });
-      if (!res.ok) throw new Error("Failed to upload floorplan");
-      const data = await res.json();
-      console.log({ data });
-      setData(data);
-      setFloorplanImage(url);
-    } catch (err) {
-      toast.error("Upload failed", { description: err instanceof Error ? err.message : "Something went wrong" });
-    }
-  }
-
+  
   useEffect(() => {
+    async function onSubmit(formData: z.infer<typeof UploadSchema>) {
+      console.log({ formData });
+      try {
+        const url = await uploadBase64ImageToCloudinary({ base64Image: formData.image, folder: "steads/floorplans" });
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/vertx`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: process.env.NEXT_PUBLIC_FLOORPLAN_DETECTOR_API_KEY!,
+          },
+          body: JSON.stringify({ image: formData.image }),
+        });
+        if (!res.ok) throw new Error("Failed to upload floorplan");
+        const data = await res.json();
+        console.log({ data });
+        setData(data);
+        setFloorplanImage(url);
+      } catch (err) {
+        toast.error("Upload failed", { description: err instanceof Error ? err.message : "Something went wrong" });
+      }
+    }
     if (image) handleSubmit(onSubmit)();
   }, [image]);
 
