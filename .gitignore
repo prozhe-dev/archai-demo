@@ -47,3 +47,4 @@ backend/model_best_val_loss_var.pkl
 .env
 .env.local
 backend/.env
+/backup

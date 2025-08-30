@@ -1668,99 +1668,18 @@ n_rooms = len(room_classes) # 12
 n_icons = len(icon_classes) # 11
 
 # 4. Predict the image
-with torch.no_grad():  # Tell PyTorch we don't need gradients (Its FORMALITY ALWAYS 1st thing to do)
-    # (bcz we are not training the model. we are just predicting.)
-
+with torch.no_grad():  # Tell PyTorch we don't need gradients
     # Check if shape of image is odd or even
     size_check = np.array([img.shape[2],img.shape[3]])%2
     height = img.shape[2] - size_check[0]
     width = img.shape[3] - size_check[1]
-    # Example:
-    # img.shape = (1, 3, 401, 601)  # Odd dimensions
-    # size_check = [1, 1]           # Both odd
-    # height = 401 - 1 = 400        # Make even
-    # width = 601 - 1 = 600         # Make even
-
-    # Why do we need EVEN dimensions?
-    # 1. Neural Network Requirements
-    # Some operations (like certain strides and pooling) work better with even dimensions
-    # Prevents rounding issues during upsampling/downsampling
-
-    # 2. Rotation Consistency
-    # With odd dimensions:
-    # 401 x 601 → rotate 90° → 601 x 401 → rotate back
-    # Might lose or shift a pixel!
-   
-    # With even dimensions:
-    #  400 x 600 → rotate 90° → 600 x 400 → rotate back
-
-    # Clean rotations, no pixel issues
-    # Odd dimensions:  7x7
-    # ⬜⬜⬜⬜⬜⬜⬜
-    # ⬜⬜⬜⬜⬜⬜⬜
-    # ⬜⬜⬜⬜⬜⬜⬜
-    # ⬜⬜⬜⬛⬜⬜⬜  <- Center pixel causes issues in rotation
-    # ⬜⬜⬜⬜⬜⬜⬜
-    # ⬜⬜⬜⬜⬜⬜⬜
-    # ⬜⬜⬜⬜⬜⬜⬜
-
-    # Even dimensions:  6x6
-    # ⬜⬜⬜⬜⬜⬜
-    # ⬜⬜⬜⬜⬜⬜
-    # ⬜⬜⬛⬛⬜⬜  <- Clean center rotation
-    # ⬜⬜⬛⬛⬜⬜
-    # ⬜⬜⬜⬜⬜⬜
-    # ⬜⬜⬜⬜⬜⬜
     img_size = (height, width)
 
-
-    # ------------Rotation Loop------------
-
-    rotations = [(0, 0),   # No rotation (original)
-             (1, -1),  # 90° clockwise, then back -90°
-             (2, 2),   # 180°, then back 180°
-             (-1, 1)]  # 270° clockwise, then back -270°
-    pred_count = len(rotations) # 4
-
-    prediction = torch.zeros([pred_count, n_classes, height, width])
-    # Create Empty Prediction Storage
-    # Shape: (4, 44, height, width)
-    #        ↑  ↑   ↑       ↑
-    #        |  |   |       └── Image width
-    #        |  |   └────────── Image height
-    #        |  └──────────────  44 classes (21 junctions + 12 rooms + 11 icons)
-    #        └─────────────────  4 rotations
-
-    # The Rotation Loop (4 times)
-    for i, r in enumerate(rotations):
-        forward, back = r
-        # 1. Rotate Image
-        rot_image = rot(img, 'tensor', forward)
-        # Example: 400x600 image rotated 90° becomes 600x400
-
-        # 2. [!!!!!] RUN Model
-        pred = model(rot_image)
-        # pred shape: (1, 44, height, width)
-        #              ↑  ↑   ↑       ↑
-        #              │  │   │       └── Each pixel gets predictions (44 classes)
-        #              │  │   └────────── For each pixel in height
-        #              │  └──────────────  44 predictions per pixel:
-        #              │                   - 21 for junctions
-        #              │                   - 12 for room types
-        #              │                   - 11 for icons (doors, windows)
-        #              └─────────────────  Batch size (1)
-
-        # 3. Rotate Predictions Back
-        pred = rot(pred, 'tensor', back)  # Rotate whole tensor
-        pred = rot(pred, 'points', back)  # Rotate point coordinates in heatmaps
-
-
-        # 4. Doublecheck Size Matches still
-        pred = F.interpolate(pred, size=(height, width), mode='bilinear', align_corners=True)
-        # 5. Store Prediction
-        prediction[i] = pred[0]
-
-    # ------------Rotation Loop------------
+    # Single prediction without rotation loop
+    prediction = model(img)
+    
+    # Ensure correct size
+    prediction = F.interpolate(prediction, size=(height, width), mode='bilinear', align_corners=True)
 
 # example for image size 400x600 and 44 classes:
  #  [!!!] the prediction tensor has shape [4, 44, 400, 600]   (4 rotations, 44 classes, 400 height, 600 width)
