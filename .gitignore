@@ -43,3 +43,6 @@ next-env.d.ts
 /backup/
 
 backend/model_best_val_loss_var.pkl
+
+.env
+.env.local
