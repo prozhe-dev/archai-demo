@@ -40,7 +40,8 @@ export default function UploadFloorplan() {
       console.log({ formData });
       try {
         const url = await uploadBase64ImageToCloudinary({ base64Image: formData.image, folder: "steads/floorplans" });
-        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/vertx`, {
+
+        const vertXPromis = fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/vertx`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -48,6 +49,15 @@ export default function UploadFloorplan() {
           },
           body: JSON.stringify({ image: formData.image }),
         });
+
+        toast.promise(vertXPromis, {
+          loading: 'Generating floorplan',
+          description: "This process may take 1-3min... but it's worth it!",
+          success: "Floorplan generated successfully",
+          error: 'Failed to generate floorplan',
+        });
+
+        const res = await vertXPromis;
         if (!res.ok) throw new Error("Failed to upload floorplan");
         const data = await res.json();
         console.log({ data });
@@ -106,14 +116,15 @@ export default function UploadFloorplan() {
                             </div>
                           )}
 
-                          <div className={cn("absolute inset-0 flex flex-col items-center justify-center gap-2 p-6 text-center transition-all", field.value && "opacity-0 group-hover/dropzone:opacity-100")}>
+                          <div className={cn("absolute inset-0 flex flex-col items-center justify-center gap-2 p-6 text-center transition-all", field.value && "opacity-0 group-hover/dropzone:opacity-100", isSubmitting ? "auto-alpha-0" : "auto-alpha-1")}>
                             <ImageIcon className="size-8" />
                             <p className="text-sm">{isDragActive ? "Drop your floorplan here" : "Drag & drop your floorplan here, or click to select"}</p>
                           </div>
-                          <p className="text-sm text-muted-foreground">The floorplan detection process may take a few minutes.</p>
                         </div>
                       )}
                     </Dropzone>
+
+                    
                   </div>
                 </FormControl>
                 <FormMessage />
